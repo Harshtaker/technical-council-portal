@@ -1,8 +1,9 @@
 "use client";
 
 import { supabase } from "@/utils/supabase/client"; 
-import { Calendar, MapPin, Tag, ArrowUpRight, Clock, Sparkles, History, Zap, FileText } from "lucide-react";
+import { Calendar, MapPin, Tag, ArrowUpRight, Clock, Sparkles, History, Zap, FileText, ChevronLeft } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -11,9 +12,9 @@ export default function EventsPage() {
   const [filter, setFilter] = useState<"upcoming" | "past">("upcoming");
   const [loading, setLoading] = useState(true);
 
-  // 📡 Unified Fetch Function
   async function fetchEvents() {
     try {
+      setLoading(true);
       const { data, error } = await supabase
         .from('events')
         .select('*')
@@ -22,7 +23,7 @@ export default function EventsPage() {
       if (error) throw error;
       if (data) setEvents(data);
     } catch (err) {
-      console.warn("Sync_Error: Database handshake failed.");
+      console.warn("Sync_Error: Verify Supabase table 'events' exists with columns: title, event_date, description, image_url, location, reg_link, summary_link");
     } finally {
       setLoading(false);
     }
@@ -31,7 +32,6 @@ export default function EventsPage() {
   useEffect(() => {
     fetchEvents();
 
-    // ⚡ Realtime Subscription: Update UI instantly when DB changes
     const channel = supabase
       .channel('realtime_events')
       .on(
@@ -46,63 +46,73 @@ export default function EventsPage() {
     };
   }, [filter]);
 
+  // Logic: Compares current time with event date to filter
   const filteredEvents = events.filter(event => {
-    const isPast = new Date(event.event_date) < new Date();
-    return filter === "past" ? isPast : !isPast;
+    const eventDate = new Date(event.event_date);
+    const now = new Date();
+    // Set both to midnight for accurate day-based filtering
+    now.setHours(0, 0, 0, 0);
+    eventDate.setHours(0, 0, 0, 0);
+
+    return filter === "past" ? eventDate < now : eventDate >= now;
   });
 
   return (
-    <main className="relative min-h-screen text-slate-200 selection:bg-emerald-500/30 overflow-hidden bg-[#020617] font-mono">
+    <main className="relative min-h-screen text-slate-200 selection:bg-emerald-500/30 overflow-x-hidden bg-[#020617] font-mono">
       
       {/* 🌌 CYBER BACKGROUND ENGINE */}
       <div className="fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-size-[4rem_4rem] opacity-20" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-size-[4rem_4rem] opacity-10" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,#10b98108_0%,transparent_50%)]" />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-32 pb-12">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-24 md:pt-32 pb-12">
         
         {/* 📟 HEADER */}
-        <div className="flex flex-col md:flex-row justify-between items-end gap-8 mb-20">
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="border-l-4 border-emerald-500 pl-6"
-          >
-            <h1 className="text-4xl md:text-7xl font-black text-white tracking-tighter uppercase leading-none">
-              Council <span className="text-emerald-500 text-glow">Events.</span>
-            </h1>
-          </motion.div>
+        <div className="flex flex-col gap-8 mb-16">
+          <Link href="/" className="inline-flex items-center gap-2 text-[10px] text-emerald-500 uppercase tracking-[0.4em] font-black hover:text-white transition-all group">
+            <ChevronLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> Return_to_Home
+          </Link>
 
-          <div className="flex bg-slate-900/80 p-1.5 rounded-2xl border border-white/10 backdrop-blur-xl shadow-2xl">
-            {["upcoming", "past"].map((type) => (
-              <button
-                key={type}
-                onClick={() => setFilter(type as any)}
-                className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[14px] font-black uppercase tracking-widest transition-all ${
-                  filter === type 
-                    ? "bg-emerald-500 text-black shadow-[0_0_30px_rgba(16,185,129,0.4)]" 
-                    : "text-slate-500 hover:text-white"
-                }`}
-              >
-                {type === "upcoming" ? <Sparkles size={16} /> : <History size={16} />}
-                {type}
-              </button>
-            ))}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="border-l-4 border-emerald-500 pl-6"
+            >
+              <h1 className="text-5xl md:text-6xl font-black text-white tracking-tighter uppercase leading-none ">
+                Council <span className="text-emerald-500">Events.</span>
+              </h1>
+            </motion.div>
+
+            <div className="flex bg-slate-900/80 p-1.5 rounded-2xl border border-white/10 backdrop-blur-xl shadow-2xl w-full md:w-auto">
+              {["upcoming", "past"].map((type) => (
+                <button
+                  key={type}
+                  onClick={() => setFilter(type as any)}
+                  className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all ${
+                    filter === type 
+                      ? "bg-emerald-500 text-black shadow-[0_0_30px_rgba(16,185,129,0.4)]" 
+                      : "text-slate-500 hover:text-white"
+                  }`}
+                >
+                  {type === "upcoming" ? <Sparkles size={14} /> : <History size={14} />}
+                  {type}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
         {/* ⚡ EVENT GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
           <AnimatePresence mode="popLayout">
             {loading ? (
               [...Array(3)].map((_, i) => (
-                <div key={i} className="h-125 rounded-[2.5rem] bg-white/2 animate-pulse border border-white/5" />
+                <div key={i} className="h-125 rounded-[2.5rem] bg-white/5 animate-pulse border border-white/5" />
               ))
             ) : filteredEvents.length > 0 ? (
               filteredEvents.map((event, idx) => {
-                
-                // CORE LOGIC: Link to reg_link for upcoming, summary_link for past
                 const activeLink = filter === "upcoming" ? event.reg_link : event.summary_link;
 
                 return (
@@ -110,7 +120,8 @@ export default function EventsPage() {
                     layout
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ delay: idx * 0.05 }}
                     key={event.id}
                     className="group relative bg-white/2 border border-white/5 rounded-[2.5rem] overflow-hidden hover:border-emerald-500/40 transition-all duration-700 shadow-2xl backdrop-blur-sm"
                   >
@@ -120,26 +131,19 @@ export default function EventsPage() {
                       rel="noopener noreferrer"
                       className={`block h-full ${!activeLink && 'cursor-default'}`}
                     >
-                      {/* Image Module */}
                       <div className="h-64 relative overflow-hidden grayscale group-hover:grayscale-0 transition-all duration-700">
                         {event.image_url ? (
-                          <Image 
-                            src={event.image_url} 
-                            alt={event.title} 
-                            fill 
-                            className="object-cover transition-transform duration-1000 group-hover:scale-110" 
-                          />
+                          <Image src={event.image_url} alt={event.title} fill className="object-cover transition-transform duration-1000 group-hover:scale-110" />
                         ) : (
                           <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 text-slate-700 gap-2">
                             <Tag size={32} strokeWidth={1} />
                             <span className="text-[8px] uppercase tracking-widest">No_Media_Payload</span>
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-linear-to-t from-[#020617] via-transparent to-transparent opacity-90" />
+                        <div className="absolute inset-0 bg-linear-to-t from-[#020617] via-transparent to-transparent" />
                         
-                        {/* Summary Available Indicator */}
                         {filter === "past" && event.summary_link && (
-                          <div className="absolute top-6 right-6 bg-emerald-500 text-black text-[9px] font-black px-4 py-1.5 rounded-full flex items-center gap-2 uppercase tracking-tighter shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+                          <div className="absolute top-6 right-6 bg-emerald-500 text-black text-[9px] font-black px-4 py-1.5 rounded-full flex items-center gap-2 uppercase tracking-tighter shadow-xl">
                             <FileText size={12} /> RECAP_READY
                           </div>
                         )}
@@ -159,10 +163,10 @@ export default function EventsPage() {
                         </h3>
 
                         <div className="flex items-center gap-2 text-slate-500 text-[10px] font-bold mb-6 uppercase tracking-widest italic">
-                          <MapPin size={12} className="text-emerald-500" /> {event.location || 'REC_CAMPUS_GROUNDS'}
+                          <MapPin size={12} className="text-emerald-500" /> {event.location || 'REC_CAMPUS'}
                         </div>
 
-                        <p className="text-slate-400 text-xs leading-relaxed mb-10 line-clamp-2 uppercase tracking-tight opacity-60 group-hover:opacity-100 transition-opacity">
+                        <p className="text-slate-400 text-xs leading-relaxed mb-10 line-clamp-2 uppercase tracking-tight opacity-60">
                           {event.description}
                         </p>
                         
@@ -182,8 +186,8 @@ export default function EventsPage() {
                 )
               })
             ) : (
-              <div className="col-span-full py-32 text-center border border-dashed border-white/10 rounded-[3rem] bg-white/1">
-                <Clock className="mx-auto text-slate-800 mb-6 animate-spin-slow" size={48} />
+              <div className="col-span-full py-40 text-center border border-dashed border-white/10 rounded-[3rem] bg-white/1">
+                <Clock className="mx-auto text-slate-800 mb-6" size={48} />
                 <p className="text-slate-600 font-black text-[12px] uppercase tracking-[0.5em]">Null_Events_In_This_Timeframe</p>
               </div>
             )}
