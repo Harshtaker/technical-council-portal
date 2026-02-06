@@ -15,7 +15,6 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // FORM STATES - Mapped exactly to your DB columns
   const [notice, setNotice] = useState({ content: "", link_url: "", is_active: true });
   const [event, setEvent] = useState({ title: "", event_date: "", description: "", image_url: "", location: "", reg_link: "", summary_link: "" });
   const [member, setMember] = useState({ name: "", role: "", rank: 1, image_url: "" });
@@ -55,148 +54,139 @@ export default function AdminDashboard() {
   };
 
   return (
-    <main className="min-h-screen bg-[#020617] text-slate-300 font-mono selection:bg-emerald-500/30">
+    <main className="min-h-screen bg-[#020617] text-slate-300 font-mono selection:bg-emerald-500/30 overflow-x-hidden">
       
-      {/* 📡 HEADER NAVIGATION */}
-      <nav className="border-b border-white/10 bg-[#020617]/80 backdrop-blur-xl sticky top-0 z-50 p-6">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-emerald-500 rounded-lg text-black animate-pulse">
-              <Shield size={20} />
+      {/* 📡 HEADER NAVIGATION - Fixed for Mobile */}
+      <nav className="border-b border-white/10 bg-[#020617]/80 backdrop-blur-xl sticky top-0 z-50 p-4 md:p-6">
+        <div className="max-w-7xl mx-auto flex justify-between items-center gap-2">
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="p-2 bg-emerald-500 rounded-lg text-black animate-pulse shrink-0">
+              <Shield size={18} />
             </div>
-            <h1 className="text-white font-black uppercase tracking-[0.3em] text-sm">Council_OS // Root_Access</h1>
+            <h1 className="text-white font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-[10px] md:text-sm truncate">
+              Council_OS <span className="hidden sm:inline">// Root_Access</span>
+            </h1>
           </div>
           <button 
             onClick={async () => { await supabase.auth.signOut(); router.push("/admin"); }} 
-            className="text-red-500 text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors border border-red-500/20 px-4 py-2 rounded-lg"
+            className="text-red-500 text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors border border-red-500/20 px-3 py-2 md:px-4 md:py-2 rounded-lg shrink-0"
           >
-            Terminate_Session
+            Terminate
           </button>
         </div>
       </nav>
 
-      <div className="max-w-7xl mx-auto px-6 mt-12 grid lg:grid-cols-4 gap-10">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 mt-8 md:mt-12 flex flex-col lg:grid lg:grid-cols-4 gap-8 md:gap-10">
         
-        {/* 🕹️ SIDEBAR CONTROLS */}
-        <div className="space-y-3">
+        {/* 🕹️ SIDEBAR CONTROLS - Stacked on Mobile */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-3">
           {[
-            { id: "notices", label: "Notices_Log", icon: Megaphone },
-            { id: "events", label: "Event_Deploy", icon: Calendar },
-            { id: "members", label: "Team_Registry", icon: Users }
+            { id: "notices", label: "Notices", icon: Megaphone },
+            { id: "events", label: "Events", icon: Calendar },
+            { id: "members", label: "Team", icon: Users }
           ].map((t) => (
             <button 
               key={t.id} 
               onClick={() => setActiveTab(t.id as any)} 
-              className={`w-full p-5 rounded-2xl border text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-4 transition-all ${activeTab === t.id ? "bg-emerald-500 text-black border-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.2)]" : "bg-white/5 border-white/5 hover:border-emerald-500/50 hover:bg-white/5"}`}
+              className={`w-full p-4 md:p-5 rounded-2xl border text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center lg:justify-start gap-3 md:gap-4 transition-all ${activeTab === t.id ? "bg-emerald-500 text-black border-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.2)]" : "bg-white/5 border-white/5 hover:border-emerald-500/50"}`}
             >
-              <t.icon size={18}/>
+              <t.icon size={16}/>
               {t.label}
             </button>
           ))}
         </div>
 
         {/* ⚡ MAIN COMMAND CONSOLE */}
-        <div className="lg:col-span-3 space-y-12">
+        <div className="lg:col-span-3 space-y-8 md:space-y-12">
           
-          <div className="bg-white/3 border border-white/10 p-10 rounded-[2.5rem] backdrop-blur-3xl shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-8 opacity-5">
-                <LayoutDashboard size={120} />
-            </div>
-
-            <h2 className="text-white font-black uppercase mb-10 italic flex items-center gap-3 text-xl">
-                <Plus size={24} className="text-emerald-500" /> New_Entry::{activeTab}
+          <div className="bg-white/3 border border-white/10 p-6 md:p-10 rounded-[2rem] md:rounded-[2.5rem] backdrop-blur-3xl shadow-2xl relative overflow-hidden">
+            <h2 className="text-white font-black uppercase mb-8 md:mb-10 italic flex items-center gap-3 text-lg md:text-xl relative z-10">
+                <Plus size={20} className="text-emerald-500" /> New_Entry::{activeTab}
             </h2>
 
-            <form onSubmit={handleAdd} className="space-y-6 relative z-10">
+            <form onSubmit={handleAdd} className="space-y-5 md:space-y-6 relative z-10">
               {activeTab === "notices" && (
-                <div className="grid grid-cols-1 gap-6">
+                <div className="grid grid-cols-1 gap-4 md:gap-6">
                   <textarea 
-                    className="w-full bg-[#0a0f1d] border border-white/10 rounded-2xl p-6 text-white focus:border-emerald-500 outline-none min-h-37.5 transition-all" 
+                    className="w-full bg-[#0a0f1d] border border-white/10 rounded-2xl p-5 md:p-6 text-white focus:border-emerald-500 outline-none min-h-[120px] md:min-h-[150px] transition-all text-sm" 
                     placeholder="Input broadcast message..." 
                     value={notice.content} 
                     onChange={(e)=>setNotice({...notice, content: e.target.value})} 
                     required 
                   />
                   <div className="relative">
-                    <Link2 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={18} />
-                    <input className="w-full bg-[#0a0f1d] border border-white/10 rounded-2xl py-5 pl-12 pr-6 text-white focus:border-emerald-500 outline-none" placeholder="Direct_Link_URL (Optional)" value={notice.link_url} onChange={(e)=>setNotice({...notice, link_url: e.target.value})} />
+                    <Link2 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={16} />
+                    <input className="w-full bg-[#0a0f1d] border border-white/10 rounded-2xl py-4 md:py-5 pl-12 pr-6 text-white focus:border-emerald-500 outline-none text-sm" placeholder="Direct_Link_URL (Optional)" value={notice.link_url} onChange={(e)=>setNotice({...notice, link_url: e.target.value})} />
                   </div>
                 </div>
               )}
 
               {activeTab === "events" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <input className="bg-[#0a0f1d] border border-white/10 rounded-xl p-5 outline-none focus:border-emerald-500" placeholder="Operation Title" value={event.title} onChange={(e)=>setEvent({...event, title: e.target.value})} required />
-                  <input type="date" className="bg-[#0a0f1d] border border-white/10 rounded-xl p-5 outline-none focus:border-emerald-500 text-white" value={event.event_date} onChange={(e)=>setEvent({...event, event_date: e.target.value})} required />
-                  <input className="bg-[#0a0f1d] border border-white/10 rounded-xl p-5 outline-none focus:border-emerald-500" placeholder="Image_Bucket_URL" value={event.image_url} onChange={(e)=>setEvent({...event, image_url: e.target.value})} />
-                  <input className="bg-[#0a0f1d] border border-white/10 rounded-xl p-5 outline-none focus:border-emerald-500" placeholder="Deployment_Location" value={event.location} onChange={(e)=>setEvent({...event, location: e.target.value})} />
-                  <input className="bg-[#0a0f1d] border border-white/10 rounded-xl p-5 outline-none focus:border-emerald-500" placeholder="Registration_Link" value={event.reg_link} onChange={(e)=>setEvent({...event, reg_link: e.target.value})} />
-                  <input className="bg-[#0a0f1d] border border-white/10 rounded-xl p-5 outline-none focus:border-emerald-500" placeholder="Post_Event_Summary_Link" value={event.summary_link} onChange={(e)=>setEvent({...event, summary_link: e.target.value})} />
-                  <textarea className="md:col-span-2 bg-[#0a0f1d] border border-white/10 rounded-xl p-5 outline-none focus:border-emerald-500 min-h-25" placeholder="Brief Description..." value={event.description} onChange={(e)=>setEvent({...event, description: e.target.value})} />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                  <input className="bg-[#0a0f1d] border border-white/10 rounded-xl p-4 md:p-5 outline-none focus:border-emerald-500 text-sm" placeholder="Operation Title" value={event.title} onChange={(e)=>setEvent({...event, title: e.target.value})} required />
+                  <input type="date" className="bg-[#0a0f1d] border border-white/10 rounded-xl p-4 md:p-5 outline-none focus:border-emerald-500 text-white text-sm" value={event.event_date} onChange={(e)=>setEvent({...event, event_date: e.target.value})} required />
+                  <input className="bg-[#0a0f1d] border border-white/10 rounded-xl p-4 md:p-5 outline-none focus:border-emerald-500 text-sm" placeholder="Image_Bucket_URL" value={event.image_url} onChange={(e)=>setEvent({...event, image_url: e.target.value})} />
+                  <input className="bg-[#0a0f1d] border border-white/10 rounded-xl p-4 md:p-5 outline-none focus:border-emerald-500 text-sm" placeholder="Deployment_Location" value={event.location} onChange={(e)=>setEvent({...event, location: e.target.value})} />
+                  <input className="bg-[#0a0f1d] border border-white/10 rounded-xl p-4 md:p-5 outline-none focus:border-emerald-500 text-sm" placeholder="Registration_Link" value={event.reg_link} onChange={(e)=>setEvent({...event, reg_link: e.target.value})} />
+                  <input className="bg-[#0a0f1d] border border-white/10 rounded-xl p-4 md:p-5 outline-none focus:border-emerald-500 text-sm" placeholder="Post_Event_Summary_Link" value={event.summary_link} onChange={(e)=>setEvent({...event, summary_link: e.target.value})} />
+                  <textarea className="md:col-span-2 bg-[#0a0f1d] border border-white/10 rounded-xl p-4 md:p-5 outline-none focus:border-emerald-500 min-h-[100px] text-sm" placeholder="Brief Description..." value={event.description} onChange={(e)=>setEvent({...event, description: e.target.value})} />
                 </div>
               )}
 
               {activeTab === "members" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <input className="bg-[#0a0f1d] border border-white/10 rounded-xl p-5 outline-none focus:border-emerald-500" placeholder="Personnel Name" value={member.name} onChange={(e)=>setMember({...member, name: e.target.value})} required />
-                  <input className="bg-[#0a0f1d] border border-white/10 rounded-xl p-5 outline-none focus:border-emerald-500" placeholder="Assigned Role" value={member.role} onChange={(e)=>setMember({...member, role: e.target.value})} required />
-                  <input className="bg-[#0a0f1d] border border-white/10 rounded-xl p-5 outline-none focus:border-emerald-500" placeholder="Portrait_URL" value={member.image_url} onChange={(e)=>setMember({...member, image_url: e.target.value})} />
-                  <input type="number" className="bg-[#0a0f1d] border border-white/10 rounded-xl p-5 outline-none focus:border-emerald-500" placeholder="Rank (Tier 1-5)" value={member.rank} onChange={(e)=>setMember({...member, rank: parseInt(e.target.value)})} />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                  <input className="bg-[#0a0f1d] border border-white/10 rounded-xl p-4 md:p-5 outline-none focus:border-emerald-500 text-sm" placeholder="Personnel Name" value={member.name} onChange={(e)=>setMember({...member, name: e.target.value})} required />
+                  <input className="bg-[#0a0f1d] border border-white/10 rounded-xl p-4 md:p-5 outline-none focus:border-emerald-500 text-sm" placeholder="Assigned Role" value={member.role} onChange={(e)=>setMember({...member, role: e.target.value})} required />
+                  <input className="bg-[#0a0f1d] border border-white/10 rounded-xl p-4 md:p-5 outline-none focus:border-emerald-500 text-sm" placeholder="Portrait_URL" value={member.image_url} onChange={(e)=>setMember({...member, image_url: e.target.value})} />
+                  <input type="number" className="bg-[#0a0f1d] border border-white/10 rounded-xl p-4 md:p-5 outline-none focus:border-emerald-500 text-sm" placeholder="Rank (Tier 1-5)" value={member.rank} onChange={(e)=>setMember({...member, rank: parseInt(e.target.value)})} />
                 </div>
               )}
 
-              <button className="w-full bg-emerald-500 text-black py-5 rounded-2xl font-black uppercase text-xs tracking-[0.3em] flex items-center justify-center gap-3 hover:bg-white hover:scale-[1.01] transition-all shadow-xl shadow-emerald-500/10">
-                Execute_Data_Deployment <Send size={18}/>
+              <button className="w-full bg-emerald-500 text-black py-4 md:py-5 rounded-2xl font-black uppercase text-[10px] md:text-xs tracking-[0.2em] md:tracking-[0.3em] flex items-center justify-center gap-3 hover:bg-white transition-all shadow-xl shadow-emerald-500/10">
+                Execute_Deployment <Send size={16}/>
               </button>
             </form>
           </div>
 
-          {/* 📋 LIVE DATA REGISTRY */}
-          <div className="bg-white/2 border border-white/5 rounded-[2.5rem] overflow-hidden backdrop-blur-sm">
-             <div className="p-8 bg-white/5 border-b border-white/10 flex justify-between items-center">
+          {/* 📋 LIVE DATA REGISTRY - Mobile Scrollable */}
+          <div className="bg-white/2 border border-white/5 rounded-[2rem] md:rounded-[2.5rem] overflow-hidden backdrop-blur-sm">
+             <div className="p-6 md:p-8 bg-white/5 border-b border-white/10 flex justify-between items-center">
                 <div className="flex items-center gap-3 text-slate-500">
-                    <Globe size={16} />
-                    <h3 className="text-[10px] font-black uppercase tracking-[0.4em]">Live_System_Registry</h3>
+                    <Globe size={14} />
+                    <h3 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.4em]">Live_Registry</h3>
                 </div>
-                <button onClick={fetchData} className={`text-emerald-500 hover:rotate-180 transition-all duration-700 ${loading ? 'animate-spin' : ''}`}>
-                    <RefreshCcw size={16}/>
+                <button onClick={fetchData} className={`text-emerald-500 ${loading ? 'animate-spin' : ''}`}>
+                    <RefreshCcw size={14}/>
                 </button>
              </div>
              
-             <div className="divide-y divide-white/5 max-h-125 overflow-y-auto">
+             <div className="divide-y divide-white/5 max-h-[400px] md:max-h-[500px] overflow-y-auto">
                 <AnimatePresence>
                 {dataList.map((item) => (
                     <motion.div 
                         key={item.id} 
                         initial={{ opacity: 0 }} 
                         animate={{ opacity: 1 }} 
-                        className="p-8 flex items-center justify-between hover:bg-white/3 transition-all group"
+                        className="p-5 md:p-8 flex items-center justify-between hover:bg-white/3 transition-all group gap-4"
                     >
-                        <div className="space-y-2">
-                            <p className="text-white font-bold text-lg uppercase tracking-tight group-hover:text-emerald-400 transition-colors">
+                        <div className="space-y-1 min-w-0">
+                            <p className="text-white font-bold text-sm md:text-lg uppercase tracking-tight truncate group-hover:text-emerald-400 transition-colors">
                                 {item.content || item.title || item.name}
                             </p>
-                            <div className="flex gap-4">
-                                <span className="text-[9px] text-slate-600 uppercase font-black tracking-widest bg-white/5 px-2 py-1 rounded">ID: {item.id.slice(0,8)}</span>
-                                <span className="text-[9px] text-emerald-500/40 uppercase font-black tracking-widest px-2 py-1">Synced: {new Date(item.created_at).toLocaleDateString()}</span>
+                            <div className="flex flex-wrap gap-2 md:gap-4">
+                                <span className="text-[8px] text-slate-600 uppercase font-black tracking-widest bg-white/5 px-2 py-1 rounded">ID: {item.id.slice(0,8)}</span>
+                                <span className="text-[8px] text-emerald-500/40 uppercase font-black tracking-widest px-2 py-1">{new Date(item.created_at).toLocaleDateString()}</span>
                             </div>
                         </div>
                         <button 
                             onClick={() => handleDelete(item.id)} 
-                            className="p-4 text-red-500/40 hover:text-red-500 hover:bg-red-500/10 rounded-2xl transition-all"
-                            title="Purge Entry"
+                            className="p-3 md:p-4 text-red-500/40 hover:text-red-500 hover:bg-red-500/10 rounded-xl md:rounded-2xl transition-all shrink-0"
                         >
-                            <Trash2 size={20} />
+                            <Trash2 size={18} />
                         </button>
                     </motion.div>
                 ))}
                 </AnimatePresence>
-                {dataList.length === 0 && !loading && (
-                    <div className="p-20 text-center opacity-20">
-                        <Shield size={48} className="mx-auto mb-4" />
-                        <p className="text-[10px] font-black uppercase tracking-widest">No_Data_In_Sector</p>
-                    </div>
-                )}
              </div>
           </div>
         </div>
