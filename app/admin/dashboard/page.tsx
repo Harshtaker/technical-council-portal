@@ -99,7 +99,7 @@ export default function AdminDashboard() {
         {/* ⚡ MAIN COMMAND CONSOLE */}
         <div className="lg:col-span-3 space-y-8 md:space-y-12">
           
-          <div className="bg-white/3 border border-white/10 p-6 md:p-10 rounded-[2rem] md:rounded-[2.5rem] backdrop-blur-3xl shadow-2xl relative overflow-hidden">
+          <div className="bg-white/3 border border-white/10 p-6 md:p-10 rounded-4x1 md:rounded-[2.5rem] backdrop-blur-3xl shadow-2xl relative overflow-hidden">
             <h2 className="text-white font-black uppercase mb-8 md:mb-10 italic flex items-center gap-3 text-lg md:text-xl relative z-10">
                 <Plus size={20} className="text-emerald-500" /> New_Entry::{activeTab}
             </h2>
@@ -108,7 +108,7 @@ export default function AdminDashboard() {
               {activeTab === "notices" && (
                 <div className="grid grid-cols-1 gap-4 md:gap-6">
                   <textarea 
-                    className="w-full bg-[#0a0f1d] border border-white/10 rounded-2xl p-5 md:p-6 text-white focus:border-emerald-500 outline-none min-h-[120px] md:min-h-[150px] transition-all text-sm" 
+                    className="w-full bg-[#0a0f1d] border border-white/10 rounded-2xl p-5 md:p-6 text-white focus:border-emerald-500 outline-none min-h-30 md:min-h-37.5 transition-all text-sm" 
                     placeholder="Input broadcast message..." 
                     value={notice.content} 
                     onChange={(e)=>setNotice({...notice, content: e.target.value})} 
@@ -129,7 +129,7 @@ export default function AdminDashboard() {
                   <input className="bg-[#0a0f1d] border border-white/10 rounded-xl p-4 md:p-5 outline-none focus:border-emerald-500 text-sm" placeholder="Deployment_Location" value={event.location} onChange={(e)=>setEvent({...event, location: e.target.value})} />
                   <input className="bg-[#0a0f1d] border border-white/10 rounded-xl p-4 md:p-5 outline-none focus:border-emerald-500 text-sm" placeholder="Registration_Link" value={event.reg_link} onChange={(e)=>setEvent({...event, reg_link: e.target.value})} />
                   <input className="bg-[#0a0f1d] border border-white/10 rounded-xl p-4 md:p-5 outline-none focus:border-emerald-500 text-sm" placeholder="Post_Event_Summary_Link" value={event.summary_link} onChange={(e)=>setEvent({...event, summary_link: e.target.value})} />
-                  <textarea className="md:col-span-2 bg-[#0a0f1d] border border-white/10 rounded-xl p-4 md:p-5 outline-none focus:border-emerald-500 min-h-[100px] text-sm" placeholder="Brief Description..." value={event.description} onChange={(e)=>setEvent({...event, description: e.target.value})} />
+                  <textarea className="md:col-span-2 bg-[#0a0f1d] border border-white/10 rounded-xl p-4 md:p-5 outline-none focus:border-emerald-500 min-h-25 text-sm" placeholder="Brief Description..." value={event.description} onChange={(e)=>setEvent({...event, description: e.target.value})} />
                 </div>
               )}
 
@@ -149,7 +149,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* 📋 LIVE DATA REGISTRY - Mobile Scrollable */}
-          <div className="bg-white/2 border border-white/5 rounded-[2rem] md:rounded-[2.5rem] overflow-hidden backdrop-blur-sm">
+          <div className="bg-white/2 border border-white/5 rounded-4x1 md:rounded-[2.5rem] overflow-hidden backdrop-blur-sm">
              <div className="p-6 md:p-8 bg-white/5 border-b border-white/10 flex justify-between items-center">
                 <div className="flex items-center gap-3 text-slate-500">
                     <Globe size={14} />
@@ -160,7 +160,7 @@ export default function AdminDashboard() {
                 </button>
              </div>
              
-             <div className="divide-y divide-white/5 max-h-[400px] md:max-h-[500px] overflow-y-auto">
+             <div className="divide-y divide-white/5 max-h-100 md:max-h-125 overflow-y-auto">
                 <AnimatePresence>
                 {dataList.map((item) => (
                     <motion.div 
