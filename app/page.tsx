@@ -101,7 +101,7 @@ export default function Home() {
   }, [latestPhotos]);
 
   return (
-    <main className="relative min-h-screen text-white overflow-x-hidden bg-[#020617]">
+    <main className="relative min-h-screen text-white overflow-x-hidden bg-[#020617] w-full">
       
       {/* 📡 REGIONAL CONNECTION ALERT */}
       <AnimatePresence>
@@ -121,7 +121,7 @@ export default function Home() {
       </AnimatePresence>
 
       {/* 🌌 HERO SECTION */}
-      <section className="relative h-[95vh] flex flex-col items-center justify-center px-6 overflow-hidden border-b border-white/5">
+      <section className="relative min-h-[90vh] md:h-[95vh] flex flex-col items-center justify-center px-6 overflow-hidden border-b border-white/5">
         <div className="absolute inset-0 z-0">
           <Image 
             src="/bg.jpg" 
@@ -133,13 +133,14 @@ export default function Home() {
           <div className="absolute inset-0 bg-linear-to-b from-transparent via-[#020617]/60 to-[#020617]" />
         </div>
 
-        <div className="relative z-10 w-full max-w-5xl flex flex-col md:flex-row items-center justify-center gap-8 lg:gap-10">
+        <div className="relative z-10 w-full max-w-5xl flex flex-col md:flex-row items-center justify-center gap-8 lg:gap-10 py-12">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center md:text-left shrink-0">
-            <h1 className="text-7xl md:text-9xl font-black tracking-tighter leading-[0.8] mb-8 uppercase">
+            {/* Title fixed for mobile with responsive sizing */}
+            <h1 className="text-4xl sm:text-7xl md:text-9xl font-black tracking-tighter leading-[0.8] mb-8 uppercase">
               Technical <br />
               <span className="text-transparent bg-clip-text bg-linear-to-r from-emerald-400 via-blue-400 to-blue-600">Council</span>
             </h1>
-            <p className="max-w-xs md:max-w-sm text-slate-400 text-xl md:text-2xl font-medium leading-relaxed italic border-l-4 border-emerald-500/30 pl-8">
+            <p className="max-w-xs md:max-w-sm text-slate-400 text-lg md:text-2xl font-medium leading-relaxed italic border-l-4 border-emerald-500/30 pl-8 mx-auto md:mx-0">
               Fueling future tech leaders through structured excellence.
             </p>
           </motion.div>
@@ -156,7 +157,7 @@ export default function Home() {
               alt="Technical Council Assistant Mascot" 
               width={420} 
               height={420} 
-              className="relative z-10 drop-shadow-[0_0_50px_rgba(16,185,129,0.2)] filter brightness-110" 
+              className="relative z-10 drop-shadow-[0_0_50px_rgba(16,185,129,0.2)] filter brightness-110 w-70 md:w-112.5" 
             />
           </motion.div>
         </div>
@@ -208,12 +209,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 📱 DUAL VIEW: GALLERY & NOTICES */}
-      <section className="relative z-10 py-12 px-6 max-w-7xl mx-auto">
-        <div className="grid md:grid-cols-2 gap-8 items-stretch">
+      {/* 📱 DUAL VIEW: GALLERY & NOTICES - Fixed for mobile flex stacking */}
+      <section className="relative z-10 py-12 px-6 max-w-7xl mx-auto w-full">
+        <div className="flex flex-col lg:flex-row gap-8 items-stretch w-full">
           
           {/* Photo Gallery Column */}
-          <div className="bg-slate-900/50 border border-white/5 rounded-[2.5rem] p-6 flex flex-col min-h-112.5">
+          <div className="w-full lg:w-1/2 bg-slate-900/50 border border-white/5 rounded-[2.5rem] p-6 flex flex-col min-h-112.5">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-[20px] font-mono tracking-[0.2em] uppercase text-slate-200 font-black">Photo Gallery</h3>
               <Link href="/gallery" className="text-[12px] font-mono text-slate-500 hover:text-white uppercase transition-colors font-bold tracking-widest">Explore</Link>
@@ -254,14 +255,14 @@ export default function Home() {
           </div>
 
           {/* Notice Board Column */}
-          <div className="bg-slate-900/50 border border-white/5 rounded-[2.5rem] p-8 flex flex-col min-h-125 group hover:border-blue-500/20 transition-all backdrop-blur-sm">
+          <div className="w-full lg:w-1/2 bg-slate-900/50 border border-white/5 rounded-[2.5rem] p-8 flex flex-col min-h-112.5 group hover:border-blue-500/20 transition-all backdrop-blur-sm">
             <div className="flex justify-between items-center mb-10">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500 animate-pulse">
                   <Zap size={18} />
                 </div>
                 <h3 className="text-[20px] font-mono tracking-[0.2em] uppercase text-slate-200 font-black">
-                  Broadcast_Center
+                  NOTICE BOARD
                 </h3>
               </div>
               <span className="h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_10px_#3b82f6] animate-pulse" />
@@ -324,7 +325,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 📡 CONTACT & FOOTER */}
+      {/* 📡 CONTACT & FOOTER - Kept exactly as your old code */}
       <footer className="relative z-10 py-20 px-6 max-w-7xl mx-auto border-t border-white/5">
         <div className="grid md:grid-cols-3 gap-12">
           <div className="space-y-6">
