@@ -18,7 +18,7 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#020617]/90 backdrop-blur-2xl border-b border-white/5">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#020617]/95 md:bg-[#020617]/90 backdrop-blur-2xl border-b border-white/5">
       <div className="max-w-7xl mx-auto px-6 h-24 flex items-center justify-between">
         
         {/* 📟 Brand Area */}
@@ -26,25 +26,26 @@ export default function Navbar() {
           <motion.div 
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="relative w-16 h-16 p-0.5 rounded-full bg-linear-to-tr from-emerald-500/40 to-blue-500/40 group-hover:from-emerald-400 group-hover:to-blue-400 transition-all duration-500 shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+            className="relative w-14 h-14 md:w-16 md:h-16 p-0.5 rounded-full bg-linear-to-tr from-emerald-500/40 to-blue-500/40 group-hover:from-emerald-400 group-hover:to-blue-400 transition-all duration-500 shadow-[0_0_20px_rgba(16,185,129,0.2)] overflow-hidden"
           >
-            <div className="w-full h-full bg-white rounded-full flex items-center justify-center overflow-hidden">
+            {/* White Circular Frame with absolute centering and overflow hidden */}
+            <div className="w-full h-full bg-white rounded-full flex items-center justify-center overflow-hidden p-1">
               <Image 
                 src="/logo.png" 
                 alt="Technical Council Logo" 
                 width={48} 
                 height={48} 
-                className="object-contain"
+                className="object-contain rounded-full"
                 priority 
               />
             </div>
           </motion.div>
 
           <div className="flex flex-col">
-            <span className="font-black text-white text-2xl tracking-tighter uppercase leading-none group-hover:text-emerald-400 transition-colors">
+            <span className="font-black text-white text-lg md:text-2xl tracking-tighter uppercase leading-none group-hover:text-emerald-400 transition-colors">
               Technical <span className="text-emerald-500 group-hover:text-white transition-colors">Council</span>
             </span>
-            <span className="text-[10px] font-mono text-slate-500 tracking-[0.4em] uppercase mt-1.5">
+            <span className="text-[8px] md:text-[10px] font-mono text-slate-500 tracking-[0.4em] uppercase mt-1 md:mt-1.5">
               REC_Ambedkar_Nagar
             </span>
           </div>
@@ -72,7 +73,6 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* 🔐 Admin Login - Corrected Route */}
           <Link 
             href="/admin" 
             className="group flex items-center gap-3 px-6 py-3 bg-slate-900/80 border border-white/10 text-white rounded-2xl text-[11px] font-mono tracking-widest hover:bg-white hover:text-black hover:border-white transition-all duration-500 shadow-2xl"
@@ -84,10 +84,10 @@ export default function Navbar() {
 
         {/* 📱 Mobile Toggle */}
         <button 
-          className="md:hidden text-white p-2 hover:bg-white/5 rounded-full transition-colors"
+          className="md:hidden text-white p-2 hover:bg-white/5 rounded-full transition-colors relative z-70"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
-          {isMobileMenuOpen ? <X size={32} /> : <Menu size={32} />}
+          {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
       </div>
 
@@ -95,20 +95,22 @@ export default function Navbar() {
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div 
-            initial={{ opacity: 0, x: 50 }}
+            initial={{ opacity: 0, x: "100%" }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 50 }}
-            className="fixed inset-y-0 right-0 w-full max-w-sm bg-[#020617] border-l border-white/5 shadow-2xl md:hidden z-60 px-8 py-20"
+            exit={{ opacity: 0, x: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="fixed inset-0 w-full h-screen bg-[#020617] md:hidden z-60 px-8 flex flex-col justify-center"
           >
+            {/* Close button inside menu for safety */}
             <button 
-              className="absolute top-8 right-8 text-white"
+              className="absolute top-8 right-8 text-white p-2"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               <X size={32} />
             </button>
             
-            <div className="flex flex-col gap-10">
-              <p className="text-emerald-500 font-mono text-[10px] tracking-widest uppercase">{">"} Navigation_Menu</p>
+            <div className="flex flex-col gap-8">
+              <p className="text-emerald-500 font-mono text-[10px] tracking-widest uppercase mb-4 opacity-50">{">"} Navigation_Menu</p>
               {navLinks.map((link) => (
                 <Link 
                   key={link.href} 
@@ -122,11 +124,11 @@ export default function Navbar() {
                 </Link>
               ))}
               
-              <div className="pt-10 border-t border-white/5">
+              <div className="pt-10 mt-6 border-t border-white/10">
                 <Link 
                   href="/admin" 
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-4 w-full py-6 bg-emerald-500 text-black rounded-3xl text-xs font-mono font-black tracking-widest hover:bg-white transition-all shadow-lg shadow-emerald-500/10"
+                  className="flex items-center justify-center gap-4 w-full py-6 bg-emerald-500 text-black rounded-3xl text-sm font-mono font-black tracking-widest hover:bg-white transition-all shadow-lg shadow-emerald-500/20"
                 >
                   <ShieldCheck size={20} /> ADMIN_LOGIN
                 </Link>
