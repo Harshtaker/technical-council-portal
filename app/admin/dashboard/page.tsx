@@ -4,15 +4,16 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { 
-  Megaphone, Calendar, Users, LogOut, 
-  Trash2, Send, Plus, RefreshCcw, LayoutDashboard, Link2, Globe, Shield
+  Megaphone, Calendar, Users, LogOut, Image as ImageIcon,
+  Trash2, Send, Plus, RefreshCcw, Globe, Shield, Upload
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<"notices" | "events" | "members">("notices");
+  const [activeTab, setActiveTab] = useState<"notices" | "events" | "members" | "media">("notices");
   const [dataList, setDataList] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const router = useRouter();
 
   const [notice, setNotice] = useState({ content: "", link_url: "", is_active: true });
@@ -25,164 +26,201 @@ export default function AdminDashboard() {
 
   async function fetchData() {
     setLoading(true);
-    const { data } = await supabase.from(activeTab).select("*").order("created_at", { ascending: false });
-    if (data) setDataList(data);
-    setLoading(false);
+    try {
+      const currentTab = activeTab as string;
+      if (currentTab === "media") {
+        const { data, error } = await supabase.storage.from('Gallery').list('EVENT PHOTOS');
+        if (error) throw error;
+        if (data) setDataList(data.filter(f => f.name !== ".emptyFolderPlaceholder"));
+      } else {
+        const { data, error } = await supabase.from(activeTab as any).select("*").order("created_at", { ascending: false });
+        if (error) throw error;
+        if (data) setDataList(data);
+      }
+    } catch (err) {
+      console.error("Fetch_Error:", err);
+    } finally {
+      setLoading(false);
+    }
   }
+
+  const handleSystemUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'media' | 'member' | 'event') => {
+    try {
+      setUploading(true);
+      const files = e.target.files;
+      if (!files || files.length === 0) return;
+
+      const bucket = 'Gallery'; 
+      let folder = '';
+      if (type === 'media')  folder = 'EVENT PHOTOS'; 
+      if (type === 'event')  folder = 'EVENT';        
+      if (type === 'member') folder = 'TEAM_PROFILE'; 
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
+        const filePath = `${folder}/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage.from(bucket).upload(filePath, file);
+        if (uploadError) throw uploadError;
+
+        if (type !== 'media') {
+          const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(filePath);
+          if (type === 'member') setMember(prev => ({ ...prev, image_url: publicUrl }));
+          if (type === 'event') setEvent(prev => ({ ...prev, image_url: publicUrl }));
+        }
+      }
+      alert("Upload Successful");
+      if((activeTab as string) === "media") fetchData();
+    } catch (error: any) {
+      alert("Upload Error: " + error.message);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     const payload = activeTab === "notices" ? notice : activeTab === "events" ? event : member;
-    
-    const { error } = await supabase.from(activeTab).insert([payload]);
+    const { error } = await supabase.from(activeTab as any).insert([payload]);
     if (!error) {
-      alert(`${activeTab.toUpperCase()}_UPLINK_SUCCESSFUL`);
+      alert(`${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Published Successfully`);
       fetchData();
       setNotice({ content: "", link_url: "", is_active: true });
       setEvent({ title: "", event_date: "", description: "", image_url: "", location: "", reg_link: "", summary_link: "" });
       setMember({ name: "", role: "", rank: 1, image_url: "" });
     } else {
-      alert("SYSTEM_ERROR: " + error.message);
+      alert("Database Error: " + error.message);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm("TERMINATE_DATA_ROW? This action is irreversible.")) {
-      const { error } = await supabase.from(activeTab).delete().eq("id", id);
-      if (!error) fetchData();
+  const handleDelete = async (id: string, fileName?: string) => {
+    if (confirm("Are you sure you want to delete this item? This action cannot be undone.")) {
+      if ((activeTab as string) === "media" && fileName) {
+        await supabase.storage.from('Gallery').remove([`EVENT PHOTOS/${fileName}`]);
+      } else {
+        await supabase.from(activeTab as any).delete().eq("id", id);
+      }
+      fetchData();
     }
   };
 
   return (
-    <main className="min-h-screen bg-[#020617] text-slate-300 font-mono selection:bg-emerald-500/30 overflow-x-hidden">
-      
-      {/* 📡 HEADER NAVIGATION - Fixed for Mobile */}
+    <main className="min-h-screen bg-[#020617] text-slate-300 font-sans overflow-x-hidden">
       <nav className="border-b border-white/10 bg-[#020617]/80 backdrop-blur-xl sticky top-0 z-50 p-4 md:p-6">
         <div className="max-w-7xl mx-auto flex justify-between items-center gap-2">
           <div className="flex items-center gap-2 md:gap-3">
-            <div className="p-2 bg-emerald-500 rounded-lg text-black animate-pulse shrink-0">
-              <Shield size={18} />
-            </div>
-            <h1 className="text-white font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-[10px] md:text-sm truncate">
-              Council_OS <span className="hidden sm:inline">// Root_Access</span>
-            </h1>
+            <div className="p-2 bg-emerald-600 rounded-lg text-white shrink-0"><Shield size={18} /></div>
+            <h1 className="text-white font-bold tracking-tight text-sm md:text-lg">College Council Management System</h1>
           </div>
-          <button 
-            onClick={async () => { await supabase.auth.signOut(); router.push("/admin"); }} 
-            className="text-red-500 text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors border border-red-500/20 px-3 py-2 md:px-4 md:py-2 rounded-lg shrink-0"
-          >
-            Terminate
-          </button>
+          <button onClick={async () => { await supabase.auth.signOut(); router.push("/admin"); }} className="text-slate-400 hover:text-red-500 text-[10px] font-semibold uppercase border border-white/10 px-3 py-2 rounded-lg transition-colors">Sign Out</button>
         </div>
       </nav>
 
-      <div className="max-w-7xl mx-auto px-4 md:px-6 mt-8 md:mt-12 flex flex-col lg:grid lg:grid-cols-4 gap-8 md:gap-10">
-        
-        {/* 🕹️ SIDEBAR CONTROLS - Stacked on Mobile */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-3">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 mt-8 md:mt-12 flex flex-col lg:grid lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
           {[
-            { id: "notices", label: "Notices", icon: Megaphone },
-            { id: "events", label: "Events", icon: Calendar },
-            { id: "members", label: "Team", icon: Users }
+            { id: "notices", label: "Notice Board", icon: Megaphone },
+            { id: "events", label: "Campus Events", icon: Calendar },
+            { id: "members", label: "Council Members", icon: Users },
+            { id: "media", label: "Photo Gallery", icon: ImageIcon }
           ].map((t) => (
-            <button 
-              key={t.id} 
-              onClick={() => setActiveTab(t.id as any)} 
-              className={`w-full p-4 md:p-5 rounded-2xl border text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center lg:justify-start gap-3 md:gap-4 transition-all ${activeTab === t.id ? "bg-emerald-500 text-black border-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.2)]" : "bg-white/5 border-white/5 hover:border-emerald-500/50"}`}
-            >
-              <t.icon size={16}/>
-              {t.label}
+            <button key={t.id} onClick={() => setActiveTab(t.id as any)} className={`p-4 rounded-xl border text-xs md:text-sm font-semibold flex items-center gap-4 transition-all ${activeTab === t.id ? "bg-emerald-600 text-white border-emerald-600 shadow-lg" : "bg-white/5 border-white/5 hover:bg-white/10"}`}>
+              <t.icon size={18}/> {t.label}
             </button>
           ))}
         </div>
 
-        {/* ⚡ MAIN COMMAND CONSOLE */}
-        <div className="lg:col-span-3 space-y-8 md:space-y-12">
-          
-          <div className="bg-white/3 border border-white/10 p-6 md:p-10 rounded-4x1 md:rounded-[2.5rem] backdrop-blur-3xl shadow-2xl relative overflow-hidden">
-            <h2 className="text-white font-black uppercase mb-8 md:mb-10 italic flex items-center gap-3 text-lg md:text-xl relative z-10">
-                <Plus size={20} className="text-emerald-500" /> New_Entry::{activeTab}
+        <div className="lg:col-span-3 space-y-8">
+          <div className="bg-white/5 border border-white/10 p-6 md:p-8 rounded-3xl backdrop-blur-sm">
+            <h2 className="text-white font-bold text-xl mb-6 flex items-center gap-3">
+              <Plus size={22} className="text-emerald-500" /> 
+              {activeTab === "media" ? "Upload Gallery Photos" : `Create New ${activeTab.slice(0, -1)}`}
             </h2>
 
-            <form onSubmit={handleAdd} className="space-y-5 md:space-y-6 relative z-10">
-              {activeTab === "notices" && (
-                <div className="grid grid-cols-1 gap-4 md:gap-6">
-                  <textarea 
-                    className="w-full bg-[#0a0f1d] border border-white/10 rounded-2xl p-5 md:p-6 text-white focus:border-emerald-500 outline-none min-h-30 md:min-h-37.5 transition-all text-sm" 
-                    placeholder="Input broadcast message..." 
-                    value={notice.content} 
-                    onChange={(e)=>setNotice({...notice, content: e.target.value})} 
-                    required 
-                  />
-                  <div className="relative">
-                    <Link2 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={16} />
-                    <input className="w-full bg-[#0a0f1d] border border-white/10 rounded-2xl py-4 md:py-5 pl-12 pr-6 text-white focus:border-emerald-500 outline-none text-sm" placeholder="Direct_Link_URL (Optional)" value={notice.link_url} onChange={(e)=>setNotice({...notice, link_url: e.target.value})} />
+            {(activeTab as string) === "media" ? (
+              <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-white/20 rounded-2xl bg-black/20 hover:border-emerald-500/50 transition-all">
+                <input type="file" id="bulk-media" multiple hidden onChange={(e) => handleSystemUpload(e, 'media')} disabled={uploading} accept="image/*" />
+                <label htmlFor="bulk-media" className="cursor-pointer flex flex-col items-center gap-4 group">
+                  <div className="w-14 h-14 bg-emerald-500/10 rounded-full flex items-center justify-center text-emerald-500 group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                    {uploading ? <RefreshCcw className="animate-spin" /> : <Upload size={28} />}
                   </div>
-                </div>
-              )}
+                  <div className="text-center">
+                    <p className="text-white font-semibold text-sm">Click to select files</p>
+                    <p className="text-slate-500 text-xs mt-1 font-medium italic">Photos will be added to the public gallery</p>
+                  </div>
+                </label>
+              </div>
+            ) : (
+              <form onSubmit={handleAdd} className="space-y-5">
+                {activeTab === "notices" && (
+                  <div className="space-y-4">
+                    <textarea className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none focus:border-emerald-500/50 min-h-30" placeholder="Enter notice description or official announcement details..." value={notice.content} onChange={(e)=>setNotice({...notice, content: e.target.value})} required />
+                    <input className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none focus:border-emerald-500/50" placeholder="Optional Link (e.g. Registration Form URL)" value={notice.link_url} onChange={(e)=>setNotice({...notice, link_url: e.target.value})} />
+                  </div>
+                )}
 
-              {activeTab === "events" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                  <input className="bg-[#0a0f1d] border border-white/10 rounded-xl p-4 md:p-5 outline-none focus:border-emerald-500 text-sm" placeholder="Operation Title" value={event.title} onChange={(e)=>setEvent({...event, title: e.target.value})} required />
-                  <input type="date" className="bg-[#0a0f1d] border border-white/10 rounded-xl p-4 md:p-5 outline-none focus:border-emerald-500 text-white text-sm" value={event.event_date} onChange={(e)=>setEvent({...event, event_date: e.target.value})} required />
-                  <input className="bg-[#0a0f1d] border border-white/10 rounded-xl p-4 md:p-5 outline-none focus:border-emerald-500 text-sm" placeholder="Image_Bucket_URL" value={event.image_url} onChange={(e)=>setEvent({...event, image_url: e.target.value})} />
-                  <input className="bg-[#0a0f1d] border border-white/10 rounded-xl p-4 md:p-5 outline-none focus:border-emerald-500 text-sm" placeholder="Deployment_Location" value={event.location} onChange={(e)=>setEvent({...event, location: e.target.value})} />
-                  <input className="bg-[#0a0f1d] border border-white/10 rounded-xl p-4 md:p-5 outline-none focus:border-emerald-500 text-sm" placeholder="Registration_Link" value={event.reg_link} onChange={(e)=>setEvent({...event, reg_link: e.target.value})} />
-                  <input className="bg-[#0a0f1d] border border-white/10 rounded-xl p-4 md:p-5 outline-none focus:border-emerald-500 text-sm" placeholder="Post_Event_Summary_Link" value={event.summary_link} onChange={(e)=>setEvent({...event, summary_link: e.target.value})} />
-                  <textarea className="md:col-span-2 bg-[#0a0f1d] border border-white/10 rounded-xl p-4 md:p-5 outline-none focus:border-emerald-500 min-h-25 text-sm" placeholder="Brief Description..." value={event.description} onChange={(e)=>setEvent({...event, description: e.target.value})} />
-                </div>
-              )}
+                {activeTab === "events" && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input className="bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none" placeholder="Event Title" value={event.title} onChange={(e)=>setEvent({...event, title: e.target.value})} required />
+                    <input type="date" className="bg-black/40 border border-white/10 rounded-xl p-4 text-white outline-none" value={event.event_date} onChange={(e)=>setEvent({...event, event_date: e.target.value})} required />
+                    <div className="flex gap-2">
+                      <input className="flex-1 bg-black/40 border border-white/10 rounded-xl p-4 text-xs text-slate-400 italic" placeholder="Upload Banner Image" value={event.image_url} readOnly />
+                      <label className="p-4 bg-emerald-500/10 text-emerald-500 rounded-xl cursor-pointer hover:bg-emerald-600 hover:text-white transition-all">
+                        <Upload size={18} /><input type="file" hidden accept="image/*" onChange={(e) => handleSystemUpload(e, 'event')} />
+                      </label>
+                    </div>
+                    <input className="bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none" placeholder="Event Venue / Location" value={event.location} onChange={(e)=>setEvent({...event, location: e.target.value})} />
+                    <input className="bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none" placeholder="Registration Link (Google Forms/Portal)" value={event.reg_link} onChange={(e)=>setEvent({...event, reg_link: e.target.value})} />
+                    <input className="bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none" placeholder="Event Summary Link (Post-Event Report)" value={event.summary_link} onChange={(e)=>setEvent({...event, summary_link: e.target.value})} />
+                    <textarea className="md:col-span-2 bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none min-h-25" placeholder="Provide a brief summary of the event activities..." value={event.description} onChange={(e)=>setEvent({...event, description: e.target.value})} />
+                  </div>
+                )}
 
-              {activeTab === "members" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                  <input className="bg-[#0a0f1d] border border-white/10 rounded-xl p-4 md:p-5 outline-none focus:border-emerald-500 text-sm" placeholder="Personnel Name" value={member.name} onChange={(e)=>setMember({...member, name: e.target.value})} required />
-                  <input className="bg-[#0a0f1d] border border-white/10 rounded-xl p-4 md:p-5 outline-none focus:border-emerald-500 text-sm" placeholder="Assigned Role" value={member.role} onChange={(e)=>setMember({...member, role: e.target.value})} required />
-                  <input className="bg-[#0a0f1d] border border-white/10 rounded-xl p-4 md:p-5 outline-none focus:border-emerald-500 text-sm" placeholder="Portrait_URL" value={member.image_url} onChange={(e)=>setMember({...member, image_url: e.target.value})} />
-                  <input type="number" className="bg-[#0a0f1d] border border-white/10 rounded-xl p-4 md:p-5 outline-none focus:border-emerald-500 text-sm" placeholder="Rank (Tier 1-5)" value={member.rank} onChange={(e)=>setMember({...member, rank: parseInt(e.target.value)})} />
-                </div>
-              )}
+                {activeTab === "members" && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input className="bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none" placeholder="Full Name" value={member.name} onChange={(e)=>setMember({...member, name: e.target.value})} required />
+                    <input className="bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none" placeholder="Designation / Role" value={member.role} onChange={(e)=>setMember({...member, role: e.target.value})} required />
+                    <div className="flex gap-2">
+                      <input className="flex-1 bg-black/40 border border-white/10 rounded-xl p-4 text-xs text-slate-400 italic" placeholder="Upload Portrait" value={member.image_url} readOnly />
+                      <label className="p-4 bg-emerald-500/10 text-emerald-500 rounded-xl cursor-pointer hover:bg-emerald-600 hover:text-white transition-all">
+                        <Upload size={18} /><input type="file" hidden accept="image/*" onChange={(e) => handleSystemUpload(e, 'member')} />
+                      </label>
+                    </div>
+                    <input type="number" className="bg-black/40 border border-white/10 rounded-xl p-4 text-white outline-none" placeholder="Display Priority (Rank)" value={member.rank} onChange={(e)=>setMember({...member, rank: parseInt(e.target.value)})} />
+                  </div>
+                )}
 
-              <button className="w-full bg-emerald-500 text-black py-4 md:py-5 rounded-2xl font-black uppercase text-[10px] md:text-xs tracking-[0.2em] md:tracking-[0.3em] flex items-center justify-center gap-3 hover:bg-white transition-all shadow-xl shadow-emerald-500/10">
-                Execute_Deployment <Send size={16}/>
-              </button>
-            </form>
+                <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-4 rounded-xl font-bold text-sm flex items-center justify-center gap-3 shadow-lg transition-all">
+                  Publish to Website <Send size={16}/>
+                </button>
+              </form>
+            )}
           </div>
 
-          {/* 📋 LIVE DATA REGISTRY - Mobile Scrollable */}
-          <div className="bg-white/2 border border-white/5 rounded-4x1 md:rounded-[2.5rem] overflow-hidden backdrop-blur-sm">
-             <div className="p-6 md:p-8 bg-white/5 border-b border-white/10 flex justify-between items-center">
-                <div className="flex items-center gap-3 text-slate-500">
-                    <Globe size={14} />
-                    <h3 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.4em]">Live_Registry</h3>
+          <div className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden backdrop-blur-sm">
+             <div className="p-5 bg-white/5 border-b border-white/10 flex justify-between items-center">
+                <div className="flex items-center gap-3 text-slate-400">
+                  <Globe size={16} />
+                  <h3 className="text-xs font-bold uppercase tracking-wider">Current Live Registry</h3>
                 </div>
-                <button onClick={fetchData} className={`text-emerald-500 ${loading ? 'animate-spin' : ''}`}>
-                    <RefreshCcw size={14}/>
+                <button onClick={fetchData} className={`text-emerald-500 hover:text-emerald-400 transition-colors ${loading ? 'animate-spin' : ''}`}>
+                  <RefreshCcw size={16}/>
                 </button>
              </div>
-             
-             <div className="divide-y divide-white/5 max-h-100 md:max-h-125 overflow-y-auto">
+             <div className="divide-y divide-white/5 max-h-125 overflow-y-auto">
                 <AnimatePresence>
                 {dataList.map((item) => (
-                    <motion.div 
-                        key={item.id} 
-                        initial={{ opacity: 0 }} 
-                        animate={{ opacity: 1 }} 
-                        className="p-5 md:p-8 flex items-center justify-between hover:bg-white/3 transition-all group gap-4"
-                    >
+                    <motion.div key={item.id || item.name} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-5 flex items-center justify-between hover:bg-white/5 transition-all group gap-4">
                         <div className="space-y-1 min-w-0">
-                            <p className="text-white font-bold text-sm md:text-lg uppercase tracking-tight truncate group-hover:text-emerald-400 transition-colors">
-                                {item.content || item.title || item.name}
-                            </p>
-                            <div className="flex flex-wrap gap-2 md:gap-4">
-                                <span className="text-[8px] text-slate-600 uppercase font-black tracking-widest bg-white/5 px-2 py-1 rounded">ID: {item.id.slice(0,8)}</span>
-                                <span className="text-[8px] text-emerald-500/40 uppercase font-black tracking-widest px-2 py-1">{new Date(item.created_at).toLocaleDateString()}</span>
+                            <p className="text-white font-semibold text-sm md:text-base truncate">{item.content || item.title || item.name}</p>
+                            <div className="flex items-center gap-3">
+                                <span className="text-[10px] text-slate-500 font-medium">Record ID: {(item.id || item.name).slice(0,8)}</span>
+                                <span className="text-[10px] text-emerald-600 font-bold uppercase">{item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Storage Object'}</span>
                             </div>
                         </div>
-                        <button 
-                            onClick={() => handleDelete(item.id)} 
-                            className="p-3 md:p-4 text-red-500/40 hover:text-red-500 hover:bg-red-500/10 rounded-xl md:rounded-2xl transition-all shrink-0"
-                        >
-                            <Trash2 size={18} />
+                        <button onClick={() => handleDelete(item.id, item.name)} className="p-3 text-slate-500 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all shrink-0">
+                          <Trash2 size={18} />
                         </button>
                     </motion.div>
                 ))}
