@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronLeft, ChevronRight, Play, Camera } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Play, Camera, ImageIcon } from "lucide-react";
 import { supabase } from "../../utils/supabase/client";
 
 export default function GalleryPage() {
@@ -13,6 +13,7 @@ export default function GalleryPage() {
   const fetchFromFolder = async () => {
     try {
       setLoading(true);
+      // Fetching directly from the storage bucket folder
       const { data, error } = await supabase.storage
         .from("Gallery")
         .list("EVENT PHOTOS", {
@@ -40,7 +41,7 @@ export default function GalleryPage() {
         setMedia(formatted);
       }
     } catch (err) {
-      console.warn("Storage_Sync_Notice: Check folder paths.");
+      console.warn("Gallery synchronization notice: Verify storage bucket paths.");
     } finally {
       setLoading(false);
     }
@@ -70,45 +71,30 @@ export default function GalleryPage() {
   }, [selectedIndex, nextMedia, prevMedia]);
 
   return (
-    <main className="relative min-h-screen bg-[#020617] overflow-hidden selection:bg-emerald-500/30">
+    <main className="relative min-h-screen bg-[#020617] overflow-hidden font-sans">
       
-      {/* 🌌 UNIFIED CYBER BACKGROUND */}
+      {/* 🌌 INSTITUTIONAL BACKGROUND GRID */}
       <div className="fixed inset-0 z-0">
-        {/* Animated Grid Layer */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-size-[4rem_4rem] mask-[radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20" />
-        
-        {/* Floating Glowing Orbs */}
-        <motion.div 
-          animate={{ x: [0, 80, 0], y: [0, 40, 0], scale: [1, 1.1, 1] }} 
-          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-          className="absolute top-[-5%] left-[-5%] w-[45%] h-[45%] bg-emerald-500/10 blur-[100px] rounded-full" 
-        />
-        <motion.div 
-          animate={{ x: [0, -80, 0], y: [0, -40, 0], scale: [1, 1.2, 1] }} 
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute bottom-[-5%] right-[-5%] w-[45%] h-[45%] bg-blue-500/10 blur-[100px] rounded-full" 
-        />
-
-        {/* Scanline Effect */}
-        <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(to_bottom,transparent_50%,rgba(0,0,0,0.5)_50%)] bg-size-[100%_4px] opacity-[0.04]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-size-[4rem_4rem] opacity-5" />
+        <div className="absolute top-[-5%] left-[-5%] w-[45%] h-[45%] bg-emerald-600/5 blur-[120px] rounded-full" />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto pt-32 pb-20 px-6">
         
         <header className="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="border-l-4 border-emerald-500 pl-6">
-            <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase text-white leading-none">
-              Visual <span className="text-emerald-500">Archives.</span>
+          <div>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white leading-none">
+              Council <span className="text-emerald-500">Archives</span>
             </h1>
-            <p className="text-slate-500 font-mono mt-4 uppercase tracking-[0.3em] text-[10px]">
-              System Logs & Technical Recap @ REC Ambedkar Nagar
+            <p className="text-slate-500 mt-4 text-sm md:text-base font-medium">
+              Official visual records and event media of Rajkiya Engineering College
             </p>
           </div>
 
-          <div className="flex items-center gap-4 bg-slate-900/60 border border-white/10 px-6 py-3 rounded-2xl backdrop-blur-md shadow-2xl">
-            <Camera size={18} className="text-emerald-500" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">
-              {media.length} Data Entries Found
+          <div className="flex items-center gap-4 bg-white/5 border border-white/10 px-6 py-3 rounded-2xl backdrop-blur-md">
+            <Camera size={20} className="text-emerald-500" />
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
+              {media.length} Published Entries
             </span>
           </div>
         </header>
@@ -116,35 +102,36 @@ export default function GalleryPage() {
         {loading ? (
           <div className="h-96 flex flex-col items-center justify-center">
             <div className="w-12 h-12 border-2 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin" />
-            <p className="mt-4 text-[9px] font-mono text-slate-500 uppercase tracking-widest">Retrieving_Visual_Data...</p>
+            <p className="mt-4 text-xs font-medium text-slate-500 uppercase tracking-widest">Loading Media...</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {media.map((item, i) => (
               <motion.div
                 key={item.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: i * 0.03 }}
-                whileHover={{ scale: 1.03, y: -5 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.02 }}
+                whileHover={{ y: -5 }}
                 onClick={() => setSelectedIndex(i)}
-                className="relative aspect-4/5 cursor-pointer overflow-hidden rounded-3x1 bg-slate-900/40 border border-white/5 hover:border-emerald-500/50 transition-all duration-500 group shadow-xl backdrop-blur-sm"
+                className="relative aspect-4/5 cursor-pointer overflow-hidden rounded-2xl bg-white/5 border border-white/5 hover:border-emerald-500/50 transition-all duration-300 group shadow-lg"
               >
                 {item.isVideo ? (
-                  <div className="w-full h-full flex items-center justify-center bg-slate-800/50">
+                  <div className="w-full h-full flex items-center justify-center bg-slate-800/30">
                     <Play size={24} className="text-emerald-500" />
                   </div>
                 ) : (
                   <>
                     <Image 
                       src={item.path} 
-                      alt="Gallery Thumbnail" 
+                      alt="Gallery Item" 
                       fill 
                       sizes="(max-width: 768px) 50vw, 20vw"
-                      className="object-cover opacity-70 grayscale group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-700" 
+                      className="object-cover opacity-80 group-hover:opacity-100 transition-all duration-500" 
+                      unoptimized
                     />
-                    <div className="absolute inset-0 bg-linear-to-t from-[#020617] via-transparent to-transparent opacity-0 group-hover:opacity-90 transition-opacity duration-500" />
-                    <p className="absolute bottom-4 left-4 text-[8px] font-mono text-emerald-400 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 font-bold">
+                    <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <p className="absolute bottom-3 left-3 right-3 text-[10px] font-bold text-white uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 truncate">
                       {item.name}
                     </p>
                   </>
@@ -162,42 +149,49 @@ export default function GalleryPage() {
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
             exit={{ opacity: 0 }} 
-            className="fixed inset-0 z-999 bg-black/98 backdrop-blur-2xl flex items-center justify-center p-4"
+            className="fixed inset-0 z-100 bg-black/95 backdrop-blur-xl flex items-center justify-center p-4"
           >
-            {/* Control Bar */}
-            <div className="absolute top-0 left-0 right-0 p-8 flex justify-between items-center z-10">
+            {/* Navigation Controls */}
+            <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-10">
                 <div className="flex flex-col">
-                  <span className="text-emerald-500 font-mono text-[10px] tracking-widest uppercase font-bold">Node_Status: Active</span>
-                  <span className="text-slate-500 font-mono text-[10px] tracking-widest uppercase">Entry {selectedIndex + 1} / {media.length}</span>
+                  <span className="text-emerald-500 font-bold text-xs tracking-wider uppercase">Archival Viewer</span>
+                  <span className="text-slate-500 font-medium text-[10px] uppercase">Record {selectedIndex + 1} of {media.length}</span>
                 </div>
-                <button onClick={() => setSelectedIndex(null)} className="w-12 h-12 flex items-center justify-center bg-white/5 rounded-full hover:bg-emerald-500 group transition-all">
-                  <X size={24} className="text-white group-hover:text-black" />
+                <button onClick={() => setSelectedIndex(null)} className="w-10 h-10 flex items-center justify-center bg-white/10 rounded-full hover:bg-red-500 transition-colors">
+                  <X size={20} className="text-white" />
                 </button>
             </div>
 
-            <button onClick={prevMedia} className="absolute left-4 md:left-12 w-14 h-14 flex items-center justify-center bg-white/5 rounded-full hover:bg-emerald-500 hover:text-black transition-all z-10">
-              <ChevronLeft size={32} />
+            <button onClick={prevMedia} className="absolute left-4 md:left-8 w-12 h-12 flex items-center justify-center bg-white/5 rounded-full hover:bg-emerald-600 transition-colors z-10">
+              <ChevronLeft size={24} className="text-white" />
             </button>
-            <button onClick={nextMedia} className="absolute right-4 md:right-12 w-14 h-14 flex items-center justify-center bg-white/5 rounded-full hover:bg-emerald-500 hover:text-black transition-all z-10">
-              <ChevronRight size={32} />
+            <button onClick={nextMedia} className="absolute right-4 md:right-8 w-12 h-12 flex items-center justify-center bg-white/5 rounded-full hover:bg-emerald-600 transition-colors z-10">
+              <ChevronRight size={24} className="text-white" />
             </button>
 
-            <div className="max-w-6xl w-full flex flex-col items-center">
+            <div className="max-w-5xl w-full flex flex-col items-center">
               <motion.div 
                 key={selectedIndex}
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="relative w-full h-[70vh] flex items-center justify-center"
+                className="relative w-full h-[75vh] flex items-center justify-center"
               >
                 {media[selectedIndex].isVideo ? (
-                  <video src={media[selectedIndex].path} controls autoPlay className="max-h-full rounded-2xl shadow-2xl border border-white/10" />
+                  <video src={media[selectedIndex].path} controls autoPlay className="max-h-full rounded-xl shadow-2xl" />
                 ) : (
                   <div className="relative w-full h-full">
-                    <Image src={media[selectedIndex].path} alt="Preview" fill className="object-contain" priority />
+                    <Image 
+                      src={media[selectedIndex].path} 
+                      alt="View" 
+                      fill 
+                      className="object-contain" 
+                      priority 
+                      unoptimized
+                    />
                   </div>
                 )}
               </motion.div>
-              <h2 className="mt-12 text-2xl md:text-3xl font-black uppercase text-white tracking-tighter text-center">
+              <h2 className="mt-8 text-lg md:text-2xl font-bold text-white uppercase tracking-tight text-center">
                 {media[selectedIndex].name}
               </h2>
             </div>

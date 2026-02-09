@@ -23,10 +23,10 @@ export default function ContactPage() {
             animate={{ opacity: 1, x: 0 }}
             className="border-l-4 border-emerald-500 pl-6"
           >
-            <h1 className="text-4xl md:text-7xl font-black text-white tracking-tighter uppercase leading-none">
-              Get in <span className="text-emerald-500">Touch.</span>
+            <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight leading-none">
+              Get in <span className="text-emerald-500">Touch</span>
             </h1>
-            <p className="text-slate-500 font-mono mt-3 uppercase tracking-[0.2em] text-[10px]">
+            <p className="text-slate-500 mt-3 text-sm md:text-base font-medium">
               Direct Uplink to the Technical Council Executive Lead
             </p>
           </motion.div>

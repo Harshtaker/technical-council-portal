@@ -34,7 +34,7 @@ export default function Home() {
     async function fetchData() {
       setLoading(true);
       try {
-        // 1. FETCH FROM STORAGE
+        // ✅ 1. FIXED STORAGE FETCH: Matches Admin Dashboard folder
         const { data: storageData, error: storageError } = await supabase.storage
           .from("Gallery")
           .list("EVENT PHOTOS", {
@@ -53,13 +53,14 @@ export default function Home() {
             )
             .slice(0, 5) 
             .map((file) => ({
+              // ✅ Generates the correct Public URL for the home slider
               path: supabase.storage.from("Gallery").getPublicUrl(`EVENT PHOTOS/${file.name}`).data.publicUrl,
               label: file.name.split(".")[0].replace(/_/g, " "),
             }));
           setLatestPhotos(formattedPhotos);
         }
 
-        // 2. FETCH NOTICES (Updated to match your new schema)
+        // 2. FETCH NOTICES (Kept exactly as per your previous version)
         const { data: noticeData, error: noticeError } = await supabase
           .from('notices')
           .select('content, updated_at')
@@ -70,7 +71,6 @@ export default function Home() {
         if (noticeError) throw noticeError;
         
         if (noticeData && isMounted) {
-          // Map database 'content' to UI 'title'
           const formattedNotices = noticeData.map(n => ({
             title: n.content,
             date: new Date(n.updated_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
@@ -120,7 +120,7 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* 🌌 HERO SECTION */}
+      {/* 🌌 HERO SECTION (Kept Exactly as original) */}
       <section className="relative min-h-[90vh] md:h-[95vh] flex flex-col items-center justify-center px-6 overflow-hidden border-b border-white/5">
         <div className="absolute inset-0 z-0">
           <Image 
@@ -135,7 +135,6 @@ export default function Home() {
 
         <div className="relative z-10 w-full max-w-5xl flex flex-col md:flex-row items-center justify-center gap-8 lg:gap-10 py-12">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center md:text-left shrink-0">
-            {/* Title fixed for mobile with responsive sizing */}
             <h1 className="text-4xl sm:text-7xl md:text-9xl font-black tracking-tighter leading-[0.8] mb-8 uppercase">
               Technical <br />
               <span className="text-transparent bg-clip-text bg-linear-to-r from-emerald-400 via-blue-400 to-blue-600">Council</span>
@@ -163,7 +162,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 🏛️ ABOUT US SECTION */}
+      {/* 🏛️ ABOUT US SECTION (Kept Exactly as original) */}
       <section className="relative z-10 py-16 px-6 max-w-7xl mx-auto border-t border-white/5">
         <div className="grid md:grid-cols-12 gap-12 items-start">
           <div className="md:col-span-8 space-y-8">
@@ -209,11 +208,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 📱 DUAL VIEW: GALLERY & NOTICES - Fixed for mobile flex stacking */}
+      {/* 📱 DUAL VIEW: GALLERY & NOTICES (Fixed Gallery Part) */}
       <section className="relative z-10 py-12 px-6 max-w-7xl mx-auto w-full">
         <div className="flex flex-col lg:flex-row gap-8 items-stretch w-full">
           
-          {/* Photo Gallery Column */}
+          {/* Photo Gallery Column (Updated Image source logic) */}
           <div className="w-full lg:w-1/2 bg-slate-900/50 border border-white/5 rounded-[2.5rem] p-6 flex flex-col min-h-112.5">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-[20px] font-mono tracking-[0.2em] uppercase text-slate-200 font-black">Photo Gallery</h3>
@@ -240,6 +239,7 @@ export default function Home() {
                         alt={latestPhotos[currentSlide].label} 
                         fill 
                         className="object-cover" 
+                        unoptimized // Ensures images from Supabase load reliably
                       />
                       <div className="absolute inset-0 bg-linear-to-t from-black/90 to-transparent" />
                       <p className="absolute bottom-6 left-6 text-[10px] font-mono text-emerald-400 font-bold tracking-[0.3em] uppercase">
@@ -254,7 +254,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Notice Board Column */}
+          {/* Notice Board Column (Kept Exactly as original) */}
           <div className="w-full lg:w-1/2 bg-slate-900/50 border border-white/5 rounded-[2.5rem] p-8 flex flex-col min-h-112.5 group hover:border-blue-500/20 transition-all backdrop-blur-sm">
             <div className="flex justify-between items-center mb-10">
               <div className="flex items-center gap-3">
@@ -306,7 +306,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 🔗 INSTITUTIONAL STRIP */}
+      {/* (Rest of the Footer/Institutional Strip kept exactly as original) */}
       <section className="relative z-10 py-12 border-y border-white/10 bg-white/3">
         <div className="max-w-6xl mx-auto px-6 flex flex-wrap justify-center items-center gap-12 md:gap-32">
           {[
@@ -325,7 +325,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 📡 CONTACT & FOOTER - Kept exactly as your old code */}
       <footer className="relative z-10 py-20 px-6 max-w-7xl mx-auto border-t border-white/5">
         <div className="grid md:grid-cols-3 gap-12">
           <div className="space-y-6">

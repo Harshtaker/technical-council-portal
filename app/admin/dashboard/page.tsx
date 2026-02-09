@@ -17,8 +17,8 @@ export default function AdminDashboard() {
   const router = useRouter();
 
   const [notice, setNotice] = useState({ content: "", link_url: "", is_active: true });
-  const [event, setEvent] = useState({ title: "", event_date: "", description: "", image_url: "", location: "", reg_link: "", summary_link: "" });
-  const [member, setMember] = useState({ name: "", role: "", rank: 1, image_url: "" });
+  const [event, setEvent] = useState({ title: "", event_date: "", description: "", image_url: "", location: "", reg_link: "", summary_text: "" });
+  const [member, setMember] = useState({ name: "", role: "", rank: 1, image_url: "", category: "student" });
 
   useEffect(() => {
     fetchData();
@@ -87,8 +87,8 @@ export default function AdminDashboard() {
       alert(`${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Published Successfully`);
       fetchData();
       setNotice({ content: "", link_url: "", is_active: true });
-      setEvent({ title: "", event_date: "", description: "", image_url: "", location: "", reg_link: "", summary_link: "" });
-      setMember({ name: "", role: "", rank: 1, image_url: "" });
+      setEvent({ title: "", event_date: "", description: "", image_url: "", location: "", reg_link: "", summary_text: "" });
+      setMember({ name: "", role: "", rank: 1, image_url: "", category: "student" });
     } else {
       alert("Database Error: " + error.message);
     }
@@ -96,12 +96,36 @@ export default function AdminDashboard() {
 
   const handleDelete = async (id: string, fileName?: string) => {
     if (confirm("Are you sure you want to delete this item? This action cannot be undone.")) {
-      if ((activeTab as string) === "media" && fileName) {
-        await supabase.storage.from('Gallery').remove([`EVENT PHOTOS/${fileName}`]);
-      } else {
-        await supabase.from(activeTab as any).delete().eq("id", id);
+      try {
+        // ✅ 1. Handling Direct Media Deletion (Photo Gallery Tab)
+        if ((activeTab as string) === "media" && fileName) {
+          await supabase.storage.from('Gallery').remove([`EVENT PHOTOS/${fileName}`]);
+        } 
+        // ✅ 2. Handling Event or Member Deletion (Cleaning up their images)
+        else {
+          // Get the record to find the image URL before row deletion
+          const { data: itemToDelete } = await supabase
+            .from(activeTab as any)
+            .select("image_url")
+            .eq("id", id)
+            .single();
+
+          if (itemToDelete?.image_url) {
+            // Extract filename from URL (e.g., TEAM_PROFILE/123_pic.jpg -> 123_pic.jpg)
+            const fileNameFromUrl = itemToDelete.image_url.split('/').pop();
+            const folder = activeTab === 'members' ? 'TEAM_PROFILE' : 'EVENT';
+            
+            await supabase.storage.from('Gallery').remove([`${folder}/${fileNameFromUrl}`]);
+          }
+
+          // Finally, delete the database row
+          await supabase.from(activeTab as any).delete().eq("id", id);
+        }
+
+        fetchData();
+      } catch (error) {
+        console.error("Deletion Error:", error);
       }
-      fetchData();
     }
   };
 
@@ -155,8 +179,8 @@ export default function AdminDashboard() {
               <form onSubmit={handleAdd} className="space-y-5">
                 {activeTab === "notices" && (
                   <div className="space-y-4">
-                    <textarea className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none focus:border-emerald-500/50 min-h-30" placeholder="Enter notice description or official announcement details..." value={notice.content} onChange={(e)=>setNotice({...notice, content: e.target.value})} required />
-                    <input className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none focus:border-emerald-500/50" placeholder="Optional Link (e.g. Registration Form URL)" value={notice.link_url} onChange={(e)=>setNotice({...notice, link_url: e.target.value})} />
+                    <textarea className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none focus:border-emerald-500/50 min-h-30" placeholder="Enter notice description..." value={notice.content} onChange={(e)=>setNotice({...notice, content: e.target.value})} required />
+                    <input className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none focus:border-emerald-500/50" placeholder="Optional Link" value={notice.link_url} onChange={(e)=>setNotice({...notice, link_url: e.target.value})} />
                   </div>
                 )}
 
@@ -170,43 +194,55 @@ export default function AdminDashboard() {
                         <Upload size={18} /><input type="file" hidden accept="image/*" onChange={(e) => handleSystemUpload(e, 'event')} />
                       </label>
                     </div>
-                    <input className="bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none" placeholder="Event Venue / Location" value={event.location} onChange={(e)=>setEvent({...event, location: e.target.value})} />
-                    <input className="bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none" placeholder="Registration Link (Google Forms/Portal)" value={event.reg_link} onChange={(e)=>setEvent({...event, reg_link: e.target.value})} />
-                    <input className="bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none" placeholder="Event Summary Link (Post-Event Report)" value={event.summary_link} onChange={(e)=>setEvent({...event, summary_link: e.target.value})} />
-                    <textarea className="md:col-span-2 bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none min-h-25" placeholder="Provide a brief summary of the event activities..." value={event.description} onChange={(e)=>setEvent({...event, description: e.target.value})} />
+                    <input className="bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none" placeholder="Location" value={event.location} onChange={(e)=>setEvent({...event, location: e.target.value})} />
+                    <input className="bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none" placeholder="Registration Link" value={event.reg_link} onChange={(e)=>setEvent({...event, reg_link: e.target.value})} />
+                    <textarea className="md:col-span-2 bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none min-h-24" placeholder="Event Summary & Top Performers " value={event.summary_text} onChange={(e)=>setEvent({...event, summary_text: e.target.value})} />
+                    <textarea className="md:col-span-2 bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none min-h-32" placeholder="Full Event Description..." value={event.description} onChange={(e)=>setEvent({...event, description: e.target.value})} />
                   </div>
                 )}
 
                 {activeTab === "members" && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input className="bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none" placeholder="Full Name" value={member.name} onChange={(e)=>setMember({...member, name: e.target.value})} required />
-                    <input className="bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none" placeholder="Designation / Role" value={member.role} onChange={(e)=>setMember({...member, role: e.target.value})} required />
+                    <input className="bg-black/40 border border-white/10 rounded-xl p-4 text-white outline-none" placeholder="Full Name" value={member.name} onChange={(e)=>setMember({...member, name: e.target.value})} required />
+                    <input className="bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none" placeholder="Designation" value={member.role} onChange={(e)=>setMember({...member, role: e.target.value})} required />
                     <div className="flex gap-2">
                       <input className="flex-1 bg-black/40 border border-white/10 rounded-xl p-4 text-xs text-slate-400 italic" placeholder="Upload Portrait" value={member.image_url} readOnly />
                       <label className="p-4 bg-emerald-500/10 text-emerald-500 rounded-xl cursor-pointer hover:bg-emerald-600 hover:text-white transition-all">
                         <Upload size={18} /><input type="file" hidden accept="image/*" onChange={(e) => handleSystemUpload(e, 'member')} />
                       </label>
                     </div>
-                    <input type="number" className="bg-black/40 border border-white/10 rounded-xl p-4 text-white outline-none" placeholder="Display Priority (Rank)" value={member.rank} onChange={(e)=>setMember({...member, rank: parseInt(e.target.value)})} />
+                    <input 
+                      type="number" 
+                      className="bg-black/40 border border-white/10 rounded-xl p-4 text-white outline-none" 
+                      placeholder="Display Rank" 
+                      value={isNaN(member.rank) ? "" : member.rank} 
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setMember({ ...member, rank: val === "" ? NaN : parseInt(val) });
+                      }} 
+                    />
+                    <select 
+                      className="bg-black/40 border border-white/10 rounded-xl p-4 text-white outline-none focus:border-emerald-500/50" 
+                      value={member.category} 
+                      onChange={(e)=>setMember({...member, category: e.target.value})}
+                    >
+                      <option value="student" className="bg-[#020617]">Student</option>
+                      <option value="administration" className="bg-[#020617]">Administration</option>
+                    </select>
                   </div>
                 )}
 
                 <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-4 rounded-xl font-bold text-sm flex items-center justify-center gap-3 shadow-lg transition-all">
-                  Publish to Website <Send size={16}/>
+                  Publish to Live Site <Send size={16}/>
                 </button>
               </form>
             )}
           </div>
 
           <div className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden backdrop-blur-sm">
-             <div className="p-5 bg-white/5 border-b border-white/10 flex justify-between items-center">
-                <div className="flex items-center gap-3 text-slate-400">
-                  <Globe size={16} />
-                  <h3 className="text-xs font-bold uppercase tracking-wider">Current Live Registry</h3>
-                </div>
-                <button onClick={fetchData} className={`text-emerald-500 hover:text-emerald-400 transition-colors ${loading ? 'animate-spin' : ''}`}>
-                  <RefreshCcw size={16}/>
-                </button>
+             <div className="p-5 bg-white/5 border-b border-white/10 flex justify-between items-center text-slate-400">
+                <div className="flex items-center gap-3"><Globe size={16} /><h3 className="text-xs font-bold uppercase tracking-wider">Current Registry</h3></div>
+                <button onClick={fetchData} className={`text-emerald-500 hover:text-emerald-400 ${loading ? 'animate-spin' : ''}`}><RefreshCcw size={16}/></button>
              </div>
              <div className="divide-y divide-white/5 max-h-125 overflow-y-auto">
                 <AnimatePresence>
@@ -215,13 +251,11 @@ export default function AdminDashboard() {
                         <div className="space-y-1 min-w-0">
                             <p className="text-white font-semibold text-sm md:text-base truncate">{item.content || item.title || item.name}</p>
                             <div className="flex items-center gap-3">
-                                <span className="text-[10px] text-slate-500 font-medium">Record ID: {(item.id || item.name).slice(0,8)}</span>
-                                <span className="text-[10px] text-emerald-600 font-bold uppercase">{item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Storage Object'}</span>
+                                <span className="text-[10px] text-slate-500 font-medium">ID: {(item.id || item.name).slice(0,8)}</span>
+                                <span className="text-[10px] text-emerald-600 font-bold uppercase">{item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Storage'}</span>
                             </div>
                         </div>
-                        <button onClick={() => handleDelete(item.id, item.name)} className="p-3 text-slate-500 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all shrink-0">
-                          <Trash2 size={18} />
-                        </button>
+                        <button onClick={() => handleDelete(item.id, item.name)} className="p-3 text-slate-500 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all shrink-0"><Trash2 size={18} /></button>
                     </motion.div>
                 ))}
                 </AnimatePresence>
