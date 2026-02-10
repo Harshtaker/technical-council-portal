@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata } from "next"; // ✅ Required import
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/navbar";
@@ -8,14 +8,14 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Technical Council | REC Ambedkar Nagar",
   description: "Official Hub for Innovation and Technical Excellence",
+  metadataBase: new URL("https://technical-council-portal.vercel.app"),
   icons: {
     icon: "/logo.png", 
-    apple: "/logo.png",
   },
   openGraph: {
     title: "Technical Council | REC Ambedkar Nagar",
     description: "Official Hub for Innovation and Technical Excellence",
-    url: "https://technical-council-portal.vercel.app/",
+    url: "/",
     siteName: "Technical Council RECABN",
     images: [
       {
