@@ -188,17 +188,15 @@ export default function TeamPage() {
 
             {/* 🛠️ TIER 05: GENERAL COUNCIL */}
             <section>
-              <TacticalHeader icon={Box} title="General Council" subtitle="Technical Associates" />
-              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-10 gap-3">
+              <TacticalHeader icon={Box} title="General Council" subtitle="Technical Associates" color="blue" />
+              <div className="grid grid-cols-2  md:grid-cols-5 gap-6">
                 {firstYear?.map((m) => (
-                  <div key={m.id} className="group relative">
-                    <div className="aspect-square bg-white/5 border border-white/5 rounded-xl flex items-center justify-center group-hover:border-emerald-500/30 transition-all overflow-hidden">
-                       {m.avatar ? (
-                         <Image src={m.avatar} alt={m.name} fill className="object-cover object-top opacity-70 group-hover:opacity-100 transition-opacity" unoptimized />
-                       ) : (
-                         <span className="text-sm text-slate-700 font-bold uppercase">{m.name.charAt(0)}</span>
-                       )}
+                  <div key={m.id} className="group text-center">
+                    <div className="w-20 h-20 mx-auto mb-3 rounded-4xl border border-white/10 overflow-hidden relative shadow-lg transition-transform group-hover:scale-105">
+                       {m.avatar && <Image src={m.avatar} alt={m.name} fill className="object-cover object-top" unoptimized />}
                     </div>
+                    <h5 className="font-bold text-slate-300 text-sm tracking-tight">{m.name}</h5>
+                    <p className="text-[9px] text-blue-500 font-bold uppercase mt-1">General council member</p>
                   </div>
                 ))}
               </div>
