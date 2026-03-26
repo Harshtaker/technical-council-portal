@@ -1,0 +1,18 @@
+name: Supabase Keep Alive
+
+on:
+  schedule:
+    # Runs at 00:00 UTC every Monday and Thursday
+    # This ensures Supabase never sees 7+ days of inactivity
+    - cron: '0 0 * * 1,4'
+  workflow_dispatch: # This allows you to "Force Run" it from GitHub for testing
+
+jobs:
+  ping_supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Heartbeat to Supabase
+        run: |
+          curl -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/" \
+          -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}"
