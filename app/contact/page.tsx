@@ -84,7 +84,7 @@ export default function ContactPage() {
           <div className="flex flex-col gap-6">
             <div className="grid gap-4">
               {[
-                { icon: <Mail size={20}/>, title: "Protocol_Email", detail: "harshshukla0303@gmail.com" },
+                { icon: <Mail size={20}/>, title: "Protocol_Email", detail: "technicalcouncil@recabn.ac.in" },
                 { icon: <Phone size={20}/>, title: "Phone", detail: "+91 79052 21160" },
                 { icon: <MapPin size={20}/>, title: "Location", detail: "Student Activity Center, REC Ambedkar Nagar" },
               ].map((item, i) => (
