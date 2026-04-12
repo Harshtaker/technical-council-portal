@@ -48,7 +48,7 @@ export default function ContactPage() {
               <MessageSquare className="text-emerald-500" size={24} /> Send Message
             </h2>
             
-            {/* ACTION: Sends data to harshshukla0303@gmail.com */}
+          
             <form action="https://api.web3forms.com/submit" method="POST" className="space-y-6">
               {/* IMPORTANT: PASTE YOUR ACCESS KEY BELOW */}
               <input type="hidden" name="access_key" value="9dce9832-d6a9-4b23-95f3-1731462585cf" />
