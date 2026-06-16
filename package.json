@@ -9,8 +9,10 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "@supabase/supabase-js": "^2.93.3",
     "check": "^1.0.0",
+    "emailjs": "^5.0.1",
     "framer-motion": "^12.30.0",
     "lucide-react": "^0.563.0",
     "metadata": "^0.1.0",

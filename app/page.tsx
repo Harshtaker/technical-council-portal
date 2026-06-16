@@ -4,7 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { 
   Instagram, MessageSquare, ShieldCheck, ExternalLink, 
-  ArrowRight, Zap, Target, Rocket, AlertCircle, Terminal 
+  ArrowRight, Zap, Target, Rocket, AlertCircle, Terminal,
+  Linkedin, Github, Youtube
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -339,6 +340,21 @@ export default function Home() {
             <p className="text-slate-400 text-xs leading-relaxed uppercase tracking-tighter">
               The apex technical body of Rajkiya Engineering College, Ambedkar Nagar, dedicated to fostering innovation and engineering excellence.
             </p>
+            {/* 🌐 ADDED SOCIAL LINKS SECTION */}
+            <div className="flex items-center gap-4 pt-2">
+              <a href="https://www.instagram.com/technicalcouncil_recabn?igsh=MTQyb3ZqazMxMnRoMg==" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-pink-500 transition-colors p-2 bg-white/5 rounded-xl hover:bg-white/10">
+                <Instagram size={16} />
+              </a>
+              <a href="https://linkedin.com/" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-blue-500 transition-colors p-2 bg-white/5 rounded-xl hover:bg-white/10">
+                <Linkedin size={16} />
+              </a>
+              <a href="https://github.com/" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-white transition-colors p-2 bg-white/5 rounded-xl hover:bg-white/10">
+                <Github size={16} />
+              </a>
+              <a href="https://youtube.com/" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-red-500 transition-colors p-2 bg-white/5 rounded-xl hover:bg-white/10">
+                <Youtube size={16} />
+              </a>
+            </div>
           </div>
 
           <div className="space-y-6">
@@ -362,9 +378,14 @@ export default function Home() {
           <div className="space-y-6">
             <div className="p-4 bg-white/3 border border-white/5 rounded-2xl">
               <p className="text-[10px] font-mono text-slate-500 uppercase mb-2 font-black">Mailing_Address</p>
-              <p className="text-xs text-slate-300 leading-relaxed font-medium uppercase tracking-tight">
+              <p className="text-xs text-slate-300 leading-relaxed font-medium uppercase tracking-tight mb-2">
                 Rajkiya Engineering College, Ambedkar Nagar, UP - 224122
               </p>
+              {/* ✉️ INSIGHT EMAIL CONTAINER */}
+              <p className="text-[10px] font-mono text-slate-500 uppercase mt-3 mb-1 font-black">Official_Inquiries</p>
+              <a href="mailto:techcouncil@recabn.ac.in" className="text-xs text-emerald-400 font-mono hover:underline block break-all">
+                techcouncil@recabn.ac.in
+              </a>
             </div>
             <Link href="/contact" className="w-full py-4 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-emerald-500 hover:text-white transition-all flex items-center justify-center gap-2">
               Initiate Contact <ExternalLink size={14} />

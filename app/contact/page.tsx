@@ -51,7 +51,7 @@ export default function ContactPage() {
           
             <form action="https://api.web3forms.com/submit" method="POST" className="space-y-6">
               {/* IMPORTANT: PASTE YOUR ACCESS KEY BELOW */}
-              <input type="hidden" name="access_key" value="9dce9832-d6a9-4b23-95f3-1731462585cf" />
+              <input type="hidden" name="access_key" value="31e0e3b9-e837-4ece-9a12-e857d2297897" />
               <input type="hidden" name="from_name" value="Council Web Uplink" />
               <input type="checkbox" name="botcheck" className="hidden" />
 
