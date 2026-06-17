@@ -5,7 +5,7 @@ import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { 
   Megaphone, Calendar, Users, LogOut, Image as ImageIcon,
-  Trash2, Send, Plus, RefreshCcw, Globe, Shield, Upload
+  Trash2, Send, Plus, RefreshCcw, Globe, Shield, Upload, X
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -17,7 +17,20 @@ export default function AdminDashboard() {
   const router = useRouter();
 
   const [notice, setNotice] = useState({ content: "", link_url: "", is_active: true });
-  const [event, setEvent] = useState({ title: "", event_date: "", description: "", image_url: "", location: "", reg_link: "", summary_text: "" });
+  
+  // ⚡ UPDATED: Integrated structural form config variables into the state
+  const [event, setEvent] = useState({ 
+    title: "", 
+    event_date: "", 
+    description: "", 
+    image_url: "", 
+    location: "", 
+    reg_link: "", 
+    summary_text: "",
+    is_registration_open: false,
+    custom_fields: [] as { label: string; type: string; required: boolean }[]
+  });
+  
   const [member, setMember] = useState({ name: "", role: "", rank: 1, image_url: "", category: "student" });
 
   useEffect(() => {
@@ -87,7 +100,17 @@ export default function AdminDashboard() {
       alert(`${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Published Successfully`);
       fetchData();
       setNotice({ content: "", link_url: "", is_active: true });
-      setEvent({ title: "", event_date: "", description: "", image_url: "", location: "", reg_link: "", summary_text: "" });
+      setEvent({ 
+        title: "", 
+        event_date: "", 
+        description: "", 
+        image_url: "", 
+        location: "", 
+        reg_link: "", 
+        summary_text: "",
+        is_registration_open: false,
+        custom_fields: []
+      });
       setMember({ name: "", role: "", rank: 1, image_url: "", category: "student" });
     } else {
       alert("Database Error: " + error.message);
@@ -97,13 +120,10 @@ export default function AdminDashboard() {
   const handleDelete = async (id: string, fileName?: string) => {
     if (confirm("Are you sure you want to delete this item? This action cannot be undone.")) {
       try {
-        // ✅ 1. Handling Direct Media Deletion (Photo Gallery Tab)
         if ((activeTab as string) === "media" && fileName) {
           await supabase.storage.from('Gallery').remove([`EVENT PHOTOS/${fileName}`]);
         } 
-        // ✅ 2. Handling Event or Member Deletion (Cleaning up their images)
         else {
-          // Get the record to find the image URL before row deletion
           const { data: itemToDelete } = await supabase
             .from(activeTab as any)
             .select("image_url")
@@ -111,14 +131,12 @@ export default function AdminDashboard() {
             .single();
 
           if (itemToDelete?.image_url) {
-            // Extract filename from URL (e.g., TEAM_PROFILE/123_pic.jpg -> 123_pic.jpg)
             const fileNameFromUrl = itemToDelete.image_url.split('/').pop();
             const folder = activeTab === 'members' ? 'TEAM_PROFILE' : 'EVENT';
             
             await supabase.storage.from('Gallery').remove([`${folder}/${fileNameFromUrl}`]);
           }
 
-          // Finally, delete the database row
           await supabase.from(activeTab as any).delete().eq("id", id);
         }
 
@@ -127,6 +145,29 @@ export default function AdminDashboard() {
         console.error("Deletion Error:", error);
       }
     }
+  };
+
+  // 📝 NEW HELPERS FOR DYNAMIC WEB FORM GENERATOR
+  const addDynamicField = () => {
+    setEvent(prev => ({
+      ...prev,
+      custom_fields: [...prev.custom_fields, { label: "", type: "text", required: true }]
+    }));
+  };
+
+  const removeDynamicField = (index: number) => {
+    setEvent(prev => ({
+      ...prev,
+      custom_fields: prev.custom_fields.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateDynamicField = (index: number, key: "label" | "type" | "required", value: any) => {
+    setEvent(prev => {
+      const updated = [...prev.custom_fields];
+      updated[index] = { ...updated[index], [key]: value };
+      return { ...prev, custom_fields: updated };
+    });
   };
 
   return (
@@ -195,9 +236,83 @@ export default function AdminDashboard() {
                       </label>
                     </div>
                     <input className="bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none" placeholder="Location" value={event.location} onChange={(e)=>setEvent({...event, location: e.target.value})} />
-                    <input className="bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none" placeholder="Registration Link" value={event.reg_link} onChange={(e)=>setEvent({...event, reg_link: e.target.value})} />
+                    <input className="bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none" placeholder="External Registration Link (Optional)" value={event.reg_link} onChange={(e)=>setEvent({...event, reg_link: e.target.value})} />
+                    
+                    {/* ⚙️ NEW: In-House Web Registration Control Framework */}
+                    <div className="bg-black/40 border border-white/10 rounded-xl p-4 flex items-center justify-between">
+                      <span className="text-sm font-semibold text-slate-300">Open In-House Portal Registrations</span>
+                      <input 
+                        type="checkbox" 
+                        checked={event.is_registration_open} 
+                        onChange={(e) => setEvent({ ...event, is_registration_open: e.target.checked })}
+                        className="w-4 h-4 accent-emerald-500 cursor-pointer"
+                      />
+                    </div>
+
                     <textarea className="md:col-span-2 bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none min-h-24" placeholder="Event Summary & Top Performers " value={event.summary_text} onChange={(e)=>setEvent({...event, summary_text: e.target.value})} />
                     <textarea className="md:col-span-2 bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none min-h-32" placeholder="Full Event Description..." value={event.description} onChange={(e)=>setEvent({...event, description: e.target.value})} />
+                  
+                    {/* 🛠️ NEW: Dynamic Embedded JSON Form Generator Fields */}
+                    {event.is_registration_open && (
+                      <div className="md:col-span-2 border border-dashed border-white/10 rounded-2xl p-5 bg-black/10 space-y-4">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400">Custom Form Fields Creator</h4>
+                            <p className="text-[11px] text-slate-500 font-medium">Add required inputs for the registration sheet data model</p>
+                          </div>
+                          <button 
+                            type="button" 
+                            onClick={addDynamicField}
+                            className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-black font-bold text-xs uppercase tracking-wider rounded-lg transition-all flex items-center gap-2"
+                          >
+                            <Plus size={14} /> Add Input
+                          </button>
+                        </div>
+
+                        {event.custom_fields.length === 0 ? (
+                          <p className="text-xs text-slate-600 italic py-4 text-center">No custom inputs mapped. Add fields to render the terminal form view.</p>
+                        ) : (
+                          <div className="space-y-3">
+                            {event.custom_fields.map((field, index) => (
+                              <div key={index} className="flex items-center gap-3 bg-black/30 p-3 rounded-xl border border-white/5">
+                                <input 
+                                  type="text" 
+                                  placeholder="Question / Label (e.g., Roll Number)" 
+                                  value={field.label}
+                                  required
+                                  onChange={(e) => updateDynamicField(index, "label", e.target.value)}
+                                  className="flex-1 bg-slate-900 border border-white/10 rounded-lg p-2.5 text-xs text-white outline-none"
+                                />
+                                <select
+                                  value={field.type}
+                                  onChange={(e) => updateDynamicField(index, "type", e.target.value)}
+                                  className="bg-slate-900 border border-white/10 rounded-lg p-2.5 text-xs text-white outline-none"
+                                >
+                                  <option value="text">Text / String</option>
+                                  <option value="number">Number</option>
+                                  <option value="email">Email</option>
+                                </select>
+                                <label className="flex items-center gap-2 text-xs text-slate-500 font-medium cursor-pointer">
+                                  <input 
+                                    type="checkbox" 
+                                    checked={field.required}
+                                    onChange={(e) => updateDynamicField(index, "required", e.target.checked)}
+                                    className="accent-emerald-500"
+                                  /> Required
+                                </label>
+                                <button 
+                                  type="button" 
+                                  onClick={() => removeDynamicField(index)}
+                                  className="p-2 text-slate-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                                >
+                                  <X size={14} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
 
