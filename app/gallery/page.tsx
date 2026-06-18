@@ -35,7 +35,7 @@ export default function GalleryPage() {
               id: file.id,
               name: file.name.split(".")[0].replace(/_/g, " "),
               path: publicUrl,
-              isVideo: file.name.toLowerCase().endsWith(".mp4"),
+              isVideo: /\.(mp4|webm|ogg|mov|m4v|3gp|heic)$/i.test(file.name),
             };
           });
         setMedia(formatted);
@@ -71,7 +71,7 @@ export default function GalleryPage() {
   }, [selectedIndex, nextMedia, prevMedia]);
 
   return (
-    <main className="relative min-h-screen bg-[#020617] overflow-hidden font-sans">
+    <main className="relative min-h-screen text-slate-200 bg-[#020617] overflow-hidden font-sans">
       
       {/* 🌌 INSTITUTIONAL BACKGROUND GRID */}
       <div className="fixed inset-0 z-0">
@@ -116,9 +116,31 @@ export default function GalleryPage() {
                 onClick={() => setSelectedIndex(i)}
                 className="relative aspect-4/5 cursor-pointer overflow-hidden rounded-2xl bg-white/5 border border-white/5 hover:border-emerald-500/50 transition-all duration-300 group shadow-lg"
               >
+                {/* Inline Live Previews with full hardware metadata flags */}
                 {item.isVideo ? (
-                  <div className="w-full h-full flex items-center justify-center bg-slate-800/30">
-                    <Play size={24} className="text-emerald-500" />
+                  <div className="relative w-full h-full bg-slate-950 flex items-center justify-center">
+                    <video 
+                      src={`${item.path}#t=0.1`}
+                      className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-all duration-500"
+                      muted
+                      playsInline
+                      preload="metadata"
+                      onClick={(e) => e.preventDefault()}
+                    >
+                      <source src={`${item.path}#t=0.1`} type="video/mp4" />
+                      <source src={`${item.path}#t=0.1`} type="video/quicktime" />
+                    </video>
+                    <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent" />
+                    
+                    {/* Dark gradient blur over black screens */}
+                    <div className="absolute inset-0 bg-emerald-950/10 backdrop-blur-[1px] opacity-40 group-hover:opacity-0 transition-opacity duration-300" />
+
+                    <div className="absolute w-10 h-10 bg-emerald-500/20 group-hover:bg-emerald-500 border border-emerald-500/40 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg shadow-emerald-500/10 z-10">
+                      <Play size={16} className="text-white group-hover:text-black fill-current translate-x-0.5" />
+                    </div>
+                    <p className="absolute bottom-3 left-3 right-3 text-[10px] font-bold text-white uppercase tracking-wider truncate z-10">
+                      {item.name}
+                    </p>
                   </div>
                 ) : (
                   <>
@@ -149,7 +171,7 @@ export default function GalleryPage() {
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
             exit={{ opacity: 0 }} 
-            className="fixed inset-0 z-100 bg-black/95 backdrop-blur-xl flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex items-center justify-center p-4"
           >
             {/* Navigation Controls */}
             <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-10">
@@ -176,8 +198,38 @@ export default function GalleryPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="relative w-full h-[75vh] flex items-center justify-center"
               >
+                {/* ✅ FIXED: Integrated full dynamic onError handler fallback layer to catch unsupported video profiles */}
                 {media[selectedIndex].isVideo ? (
-                  <video src={media[selectedIndex].path} controls autoPlay className="max-h-full rounded-xl shadow-2xl" />
+                  <div className="relative w-full h-full flex flex-col items-center justify-center">
+                    <video 
+                      key={selectedIndex}
+                      src={media[selectedIndex].path} 
+                      controls 
+                      autoPlay 
+                      playsInline
+                      preload="auto"
+                      crossOrigin="anonymous"
+                      className="w-full max-w-full max-h-[70vh] object-contain rounded-2xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.8)]"
+                      onError={(e) => {
+                        const container = e.currentTarget.parentElement;
+                        if (container && !container.querySelector('.fallback-link')) {
+                          const alertDiv = document.createElement('div');
+                          alertDiv.className = 'fallback-link absolute inset-0 bg-[#0b1329]/95 backdrop-blur-md rounded-2xl flex flex-col items-center justify-center p-6 text-center border border-white/10 z-20 font-sans';
+                          alertDiv.innerHTML = `
+                            <p class="text-sm font-bold text-white uppercase tracking-wider mb-2">Browser Codec Mismatch</p>
+                            <p class="text-xs text-slate-400 max-w-xs mb-6 leading-relaxed">This video container cannot be processed natively by your browser's default player codecs.</p>
+                            <a href="${media[selectedIndex].path}" target="_blank" rel="noopener noreferrer" class="px-5 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-emerald-500/10">
+                              Open Video In New Tab 🚀
+                            </a>
+                          `;
+                          container.appendChild(alertDiv);
+                        }
+                      }}
+                    >
+                      <source src={media[selectedIndex].path} type="video/mp4" />
+                      <source src={media[selectedIndex].path} type="video/quicktime" />
+                    </video>
+                  </div>
                 ) : (
                   <div className="relative w-full h-full">
                     <Image 
