@@ -17,7 +17,7 @@ export default function GalleryPage() {
       const { data, error } = await supabase.storage
         .from("Gallery")
         .list("EVENT PHOTOS", {
-          limit: 100,
+          limit: 1000,
           sortBy: { column: "name", order: "desc" },
         });
 
