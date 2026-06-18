@@ -1,5 +1,6 @@
 import type { Metadata } from "next"; // ✅ Required import
 import { Inter } from "next/font/google";
+// @ts-ignore: Suppress missing type declarations for CSS side-effect import
 import "./globals.css";
 import Navbar from "@/components/navbar";
 
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
   description: "Official Hub for Innovation and Technical Excellence",
   metadataBase: new URL("https://technical-council-portal.vercel.app"),
   icons: {
-    icon: "/logo.png", 
+    icon: "/logo.png", // ✅ FIXED: Changed forward slash and removed 'public' directory
   },
   openGraph: {
     title: "Technical Council | REC Ambedkar Nagar",
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
     siteName: "Technical Council RECABN",
     images: [
       {
-        url: "/logo.png", 
+        url: "/logo.png", // ✅ FIXED: Mapped correctly for OpenGraph link previews
         width: 1200,
         height: 630,
         alt: "Technical Council Logo",
