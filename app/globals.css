@@ -6,18 +6,41 @@
   --color-council-dark: #0f172a;
   --color-council-slate: #64748b;
   
-  /* You can also add custom fonts or spacing here */
   --font-sans: "Inter", ui-sans-serif, system-ui;
+
+  /* ✅ Clean Theme Mappings (No nested media queries here) */
+  --color-theme-bg: var(--theme-bg-dynamic);
+  --color-theme-text: var(--theme-text-dynamic);
+  --color-theme-grid: var(--theme-grid-dynamic);
 }
 
 @layer base {
+  /* ☀️ LIGHT MODE VARIABLES */
+  :root {
+    --theme-bg-dynamic: #ffffff;
+    --theme-text-dynamic: #0f172a;
+    --theme-grid-dynamic: #e2e8f0;
+  }
+
+  /* 🌌 SYSTEM DARK MODE DETECTION */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --theme-bg-dynamic: #020617;   /* Council Deep Midnight Canvas */
+      --theme-text-dynamic: #f1f5f9; /* Soft text contrast */
+      --theme-grid-dynamic: #1e293b; /* Subdued grid lines */
+    }
+  }
+
   body {
-    @apply bg-white text-slate-900 antialiased;
+    background-color: var(--color-theme-bg);
+    color: var(--color-theme-text);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    @apply antialiased;
   }
 }
 
 /* Technical Council Custom Patterns */
 .bg-grid-pattern {
-  background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+  background-image: radial-gradient(var(--color-theme-grid) 1px, transparent 1px);
   background-size: 40px 40px;
 }

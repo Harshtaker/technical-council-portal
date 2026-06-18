@@ -11,10 +11,19 @@ export const metadata: Metadata = {
   description: "Official Hub for Innovation and Technical Excellence",
   metadataBase: new URL("https://technical-council-portal.vercel.app"),
   icons: {
-    // ✅ FIXED: Updated extension from .png to .jpg to match your new asset format
-    icon: "/favicon.png",      
-    shortcut: "/favicon.png",  
-    apple: "/favicon.png",     
+    // ✅ SYSTEM THEME ICON MATRIX: Detects system mode and changes tab icon automatically
+    icon: [
+      {
+        url: "/favicon-dark.png",
+        media: "(prefers-color-scheme: light)", // Light system theme -> shows dark logo
+      },
+      {
+        url: "/favicon-light.png",
+        media: "(prefers-color-scheme: dark)",  // Dark system theme -> shows white logo
+      },
+    ],
+    shortcut: "/favicon-light.png",
+    apple: "/favicon-light.png",
   },
   openGraph: {
     title: "Technical Council | REC Ambedkar Nagar",
@@ -23,7 +32,7 @@ export const metadata: Metadata = {
     siteName: "Technical Council RECABN",
     images: [
       {
-        url: "/logo.png", // Web preview ke liye logo.png ko aise hi rehne do
+        url: "/logo.png", 
         width: 1200,
         height: 630,
         alt: "Technical Council Logo",
@@ -41,7 +50,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      {/* ✅ FIXED: Added smooth transition classes to body wrapper for flawless system theme adaptation */}
+      <body className={`${inter.className} min-h-screen bg-theme-bg text-theme-text transition-colors duration-300 antialiased`}>
         <Navbar />
         {children}
       </body>

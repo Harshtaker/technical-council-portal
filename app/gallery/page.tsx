@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronLeft, ChevronRight, Play, Camera, ImageIcon } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Play, Camera } from "lucide-react";
 import { supabase } from "../../utils/supabase/client";
 
 export default function GalleryPage() {
@@ -13,7 +13,6 @@ export default function GalleryPage() {
   const fetchFromFolder = async () => {
     try {
       setLoading(true);
-      // Fetching directly from the storage bucket folder
       const { data, error } = await supabase.storage
         .from("Gallery")
         .list("EVENT PHOTOS", {
@@ -71,11 +70,13 @@ export default function GalleryPage() {
   }, [selectedIndex, nextMedia, prevMedia]);
 
   return (
-    <main className="relative min-h-screen text-slate-200 bg-[#020617] overflow-hidden font-sans">
+    /* ✅ FIXED: Bound canvas to adaptive tokens to eliminate creepy dark patches */
+    <main className="relative min-h-screen text-theme-text bg-theme-bg overflow-hidden font-sans transition-colors duration-300">
       
       {/* 🌌 INSTITUTIONAL BACKGROUND GRID */}
+      {/* ✅ FIXED: Embedded the custom global grid pattern variable rule */}
+      <div className="fixed inset-0 z-0 bg-grid-pattern opacity-40" />
       <div className="fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-size-[4rem_4rem] opacity-5" />
         <div className="absolute top-[-5%] left-[-5%] w-[45%] h-[45%] bg-emerald-600/5 blur-[120px] rounded-full" />
       </div>
 
@@ -83,17 +84,18 @@ export default function GalleryPage() {
         
         <header className="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white leading-none">
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-theme-text leading-none uppercase">
               Council <span className="text-emerald-500">Archives</span>
             </h1>
-            <p className="text-slate-500 mt-4 text-sm md:text-base font-medium">
+            <p className="text-council-slate mt-4 text-sm md:text-base font-medium">
               Official visual records and event media of Rajkiya Engineering College
             </p>
           </div>
 
-          <div className="flex items-center gap-4 bg-white/5 border border-white/10 px-6 py-3 rounded-2xl backdrop-blur-md">
+          {/* ✅ FIXED: Translucent counter layout */}
+          <div className="flex items-center gap-4 bg-theme-text/5 border border-theme-grid/20 px-6 py-3 rounded-2xl backdrop-blur-md">
             <Camera size={20} className="text-emerald-500" />
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
+            <span className="text-xs font-bold uppercase tracking-wider text-theme-text/80">
               {media.length} Published Entries
             </span>
           </div>
@@ -102,7 +104,7 @@ export default function GalleryPage() {
         {loading ? (
           <div className="h-96 flex flex-col items-center justify-center">
             <div className="w-12 h-12 border-2 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin" />
-            <p className="mt-4 text-xs font-medium text-slate-500 uppercase tracking-widest">Loading Media...</p>
+            <p className="mt-4 text-xs font-medium text-council-slate uppercase tracking-widest">Loading Media...</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
@@ -114,11 +116,10 @@ export default function GalleryPage() {
                 transition={{ delay: i * 0.02 }}
                 whileHover={{ y: -5 }}
                 onClick={() => setSelectedIndex(i)}
-                className="relative aspect-4/5 cursor-pointer overflow-hidden rounded-2xl bg-white/5 border border-white/5 hover:border-emerald-500/50 transition-all duration-300 group shadow-lg"
+                className="relative aspect-4/5 cursor-pointer overflow-hidden rounded-2xl bg-theme-text/5 border border-theme-grid/10 hover:border-emerald-500/50 transition-all duration-300 group shadow-lg"
               >
-                {/* Inline Live Previews with full hardware metadata flags */}
                 {item.isVideo ? (
-                  <div className="relative w-full h-full bg-slate-950 flex items-center justify-center">
+                  <div className="relative w-full h-full bg-black flex items-center justify-center">
                     <video 
                       src={`${item.path}#t=0.1`}
                       className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-all duration-500"
@@ -131,8 +132,6 @@ export default function GalleryPage() {
                       <source src={`${item.path}#t=0.1`} type="video/quicktime" />
                     </video>
                     <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent" />
-                    
-                    {/* Dark gradient blur over black screens */}
                     <div className="absolute inset-0 bg-emerald-950/10 backdrop-blur-[1px] opacity-40 group-hover:opacity-0 transition-opacity duration-300" />
 
                     <div className="absolute w-10 h-10 bg-emerald-500/20 group-hover:bg-emerald-500 border border-emerald-500/40 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg shadow-emerald-500/10 z-10">
@@ -165,6 +164,7 @@ export default function GalleryPage() {
       </div>
 
       {/* 🖼️ LIGHTBOX MODAL */}
+      {/* ✅ FIXED: Standard fallback layer optimized for responsive lighting */}
       <AnimatePresence>
         {selectedIndex !== null && (
           <motion.div 
@@ -173,11 +173,10 @@ export default function GalleryPage() {
             exit={{ opacity: 0 }} 
             className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex items-center justify-center p-4"
           >
-            {/* Navigation Controls */}
             <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-10">
                 <div className="flex flex-col">
                   <span className="text-emerald-500 font-bold text-xs tracking-wider uppercase">Archival Viewer</span>
-                  <span className="text-slate-500 font-medium text-[10px] uppercase">Record {selectedIndex + 1} of {media.length}</span>
+                  <span className="text-slate-400 font-medium text-[10px] uppercase">Record {selectedIndex + 1} of {media.length}</span>
                 </div>
                 <button onClick={() => setSelectedIndex(null)} className="w-10 h-10 flex items-center justify-center bg-white/10 rounded-full hover:bg-red-500 transition-colors">
                   <X size={20} className="text-white" />
@@ -198,7 +197,6 @@ export default function GalleryPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="relative w-full h-[75vh] flex items-center justify-center"
               >
-                {/* ✅ FIXED: Integrated full dynamic onError handler fallback layer to catch unsupported video profiles */}
                 {media[selectedIndex].isVideo ? (
                   <div className="relative w-full h-full flex flex-col items-center justify-center">
                     <video 
@@ -214,7 +212,7 @@ export default function GalleryPage() {
                         const container = e.currentTarget.parentElement;
                         if (container && !container.querySelector('.fallback-link')) {
                           const alertDiv = document.createElement('div');
-                          alertDiv.className = 'fallback-link absolute inset-0 bg-[#0b1329]/95 backdrop-blur-md rounded-2xl flex flex-col items-center justify-center p-6 text-center border border-white/10 z-20 font-sans';
+                          alertDiv.className = 'fallback-link absolute inset-0 bg-[#020617]/95 backdrop-blur-md rounded-2xl flex flex-col items-center justify-center p-6 text-center border border-white/10 z-20 font-sans';
                           alertDiv.innerHTML = `
                             <p class="text-sm font-bold text-white uppercase tracking-wider mb-2">Browser Codec Mismatch</p>
                             <p class="text-xs text-slate-400 max-w-xs mb-6 leading-relaxed">This video container cannot be processed natively by your browser's default player codecs.</p>

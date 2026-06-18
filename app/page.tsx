@@ -35,7 +35,6 @@ export default function Home() {
     async function fetchData() {
       setLoading(true);
       try {
-        // ✅ 1. FIXED STORAGE FETCH: Matches Admin Dashboard folder
         const { data: storageData, error: storageError } = await supabase.storage
           .from("Gallery")
           .list("EVENT PHOTOS", {
@@ -54,14 +53,12 @@ export default function Home() {
             )
             .slice(0, 5) 
             .map((file) => ({
-              // ✅ Generates the correct Public URL for the home slider
               path: supabase.storage.from("Gallery").getPublicUrl(`EVENT PHOTOS/${file.name}`).data.publicUrl,
               label: file.name.split(".")[0].replace(/_/g, " "),
             }));
           setLatestPhotos(formattedPhotos);
         }
 
-        // 2. FETCH NOTICES (Kept exactly as per your previous version)
         const { data: noticeData, error: noticeError } = await supabase
           .from('notices')
           .select('content, updated_at')
@@ -102,7 +99,9 @@ export default function Home() {
   }, [latestPhotos]);
 
   return (
-    <main className="relative min-h-screen text-white overflow-x-hidden bg-[#020617] w-full">
+    /* ✅ FIXED: Removed hardcoded bg-[#020617] and text-white. 
+       Now using Tailwind v4 dynamic tokens that automatically toggle between themes. */
+    <main className="relative min-h-screen text-theme-text overflow-x-hidden bg-theme-bg w-full transition-colors duration-300">
       
       {/* 📡 REGIONAL CONNECTION ALERT */}
       <AnimatePresence>
@@ -121,26 +120,27 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* 🌌 HERO SECTION (Kept Exactly as original) */}
-      <section className="relative min-h-[90vh] md:h-[95vh] flex flex-col items-center justify-center px-6 overflow-hidden border-b border-white/5">
+      {/* 🌌 HERO SECTION */}
+      {/* ✅ FIXED: Added dynamic bg-linear container for light/dark backdrop adaptation */}
+      <section className="relative min-h-[90vh] md:h-[95vh] flex flex-col items-center justify-center px-6 overflow-hidden border-b border-theme-grid/20">
         <div className="absolute inset-0 z-0">
           <Image 
             src="/bg.jpg" 
             alt="Circuit board technical background" 
             fill 
-            className="object-cover opacity-30 grayscale" 
+            className="object-cover opacity-15 dark:opacity-30 grayscale" 
             priority 
           />
-          <div className="absolute inset-0 bg-linear-to-b from-transparent via-[#020617]/60 to-[#020617]" />
+          <div className="absolute inset-0 bg-linear-to-b from-transparent via-theme-bg/60 to-theme-bg" />
         </div>
 
         <div className="relative z-10 w-full max-w-5xl flex flex-col md:flex-row items-center justify-center gap-8 lg:gap-10 py-12">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center md:text-left shrink-0">
-            <h1 className="text-4xl sm:text-7xl md:text-9xl font-black tracking-tighter leading-[0.8] mb-8 uppercase">
+            <h1 className="text-4xl sm:text-7xl md:text-9xl font-black tracking-tighter leading-[0.8] mb-8 uppercase text-theme-text">
               Technical <br />
-              <span className="text-transparent bg-clip-text bg-linear-to-r from-emerald-400 via-blue-400 to-blue-600">Council</span>
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-emerald-500 via-blue-500 to-blue-600">Council</span>
             </h1>
-            <p className="max-w-xs md:max-w-sm text-slate-400 text-lg md:text-2xl font-medium leading-relaxed italic border-l-4 border-emerald-500/30 pl-8 mx-auto md:mx-0">
+            <p className="max-w-xs md:max-w-sm text-council-slate dark:text-slate-400 text-lg md:text-2xl font-medium leading-relaxed italic border-l-4 border-emerald-500/30 pl-8 mx-auto md:mx-0">
               Fueling future tech leaders through structured excellence.
             </p>
           </motion.div>
@@ -163,30 +163,31 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 🏛️ ABOUT US SECTION (Kept Exactly as original) */}
-      <section className="relative z-10 py-16 px-6 max-w-7xl mx-auto border-t border-white/5">
+      {/* 🏛️ ABOUT US SECTION */}
+      {/* ✅ FIXED: Dynamic colors for borders and text matching system theme mappings */}
+      <section className="relative z-10 py-16 px-6 max-w-7xl mx-auto border-t border-theme-grid/20">
         <div className="grid md:grid-cols-12 gap-12 items-start">
           <div className="md:col-span-8 space-y-8">
             <div>
-              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter border-b-2 border-emerald-500/30 pb-3 inline-block mb-6 text-slate-200">Who We Are.</h2>
-              <p className="text-slate-300 text-lg md:text-xl font-medium leading-relaxed">
+              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter border-b-2 border-emerald-500/30 pb-3 inline-block mb-6 text-theme-text">Who We Are.</h2>
+              <p className="text-council-slate dark:text-slate-300 text-lg md:text-xl font-medium leading-relaxed">
                 The Technical Council is the supreme student body of Rajkiya Engineering College Ambedkar Nagar. We serve as a vital ecosystem that bridges the gap between traditional academic theory and the rapidly evolving demands of the global tech industry.
               </p>
             </div>
             <div className="grid sm:grid-cols-2 gap-8 pt-4">
               <div className="space-y-3 text-left">
-                <h4 className="text-emerald-400 font-bold uppercase tracking-widest text-sm flex items-center gap-2">
+                <h4 className="text-emerald-500 font-bold uppercase tracking-widest text-sm flex items-center gap-2">
                   <Target size={16} /> Our Core Mission
                 </h4>
-                <p className="text-slate-400 text-sm leading-relaxed italic">
+                <p className="text-council-slate/80 dark:text-slate-400 text-sm leading-relaxed italic">
                   To cultivate a culture of relentless innovation, research, and project-based learning across all departments.
                 </p>
               </div>
               <div className="space-y-3 text-left">
-                <h4 className="text-blue-400 font-bold uppercase tracking-widest text-sm flex items-center gap-2">
+                <h4 className="text-blue-500 font-bold uppercase tracking-widest text-sm flex items-center gap-2">
                   <ShieldCheck size={16} /> Student Leadership
                 </h4>
-                <p className="text-slate-400 text-sm leading-relaxed italic">
+                <p className="text-council-slate/80 dark:text-slate-400 text-sm leading-relaxed italic">
                   Empowering students to take ownership of large-scale technical projects and administrative responsibilities.
                 </p>
               </div>
@@ -201,7 +202,8 @@ export default function Home() {
                   <motion.circle cx="50%" cy="50%" r="42%" stroke="#3b82f6" strokeWidth="1" fill="transparent" strokeDasharray="1 10" strokeLinecap="round" animate={{ rotate: -360 }} transition={{ duration: 15, repeat: Infinity, ease: "linear" }} />
                 </svg>
               </div>
-              <div className="relative w-[75%] h-[75%] bg-white rounded-full p-6 border-8 border-slate-900 shadow-2xl flex items-center justify-center z-10 shrink-0">
+              {/* ✅ FIXED: Inverted the white border frame for seamless contrast scaling */}
+              <div className="relative w-[75%] h-[75%] bg-white rounded-full p-6 border-8 border-theme-text/10 dark:border-slate-900 shadow-2xl flex items-center justify-center z-10 shrink-0">
                 <Image src="/logo.png" alt="REC Council Logo" width={180} height={180} className="object-contain" />
               </div>
             </div>
@@ -209,17 +211,18 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 📱 DUAL VIEW: GALLERY & NOTICES (Fixed Gallery Part) */}
+      {/* 📱 DUAL VIEW: GALLERY & NOTICES */}
+      {/* ✅ FIXED: Cards now leverage modern translucent utility classes for clean light theme look */}
       <section className="relative z-10 py-12 px-6 max-w-7xl mx-auto w-full">
         <div className="flex flex-col lg:flex-row gap-8 items-stretch w-full">
           
-          {/* Photo Gallery Column (Updated Image source logic) */}
-          <div className="w-full lg:w-1/2 bg-slate-900/50 border border-white/5 rounded-[2.5rem] p-6 flex flex-col min-h-112.5">
+          {/* Photo Gallery Column */}
+          <div className="w-full lg:w-1/2 bg-theme-text/5 dark:bg-slate-900/50 border border-theme-grid/20 rounded-[2.5rem] p-6 flex flex-col min-h-112.5">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-[20px] font-mono tracking-[0.2em] uppercase text-slate-200 font-black">Photo Gallery</h3>
-              <Link href="/gallery" className="text-[12px] font-mono text-slate-500 hover:text-white uppercase transition-colors font-bold tracking-widest">Explore</Link>
+              <h3 className="text-[20px] font-mono tracking-[0.2em] uppercase text-theme-text font-black">Photo Gallery</h3>
+              <Link href="/gallery" className="text-[12px] font-mono text-council-slate hover:text-theme-text uppercase transition-colors font-bold tracking-widest">Explore</Link>
             </div>
-            <div className="relative flex-1 rounded-2xl overflow-hidden border border-white/10 bg-slate-800/20">
+            <div className="relative flex-1 rounded-2xl overflow-hidden border border-theme-grid/20 bg-theme-text/5">
               {loading ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="w-6 h-6 border-2 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin" />
@@ -240,29 +243,29 @@ export default function Home() {
                         alt={latestPhotos[currentSlide].label} 
                         fill 
                         className="object-cover" 
-                        unoptimized // Ensures images from Supabase load reliably
+                        unoptimized 
                       />
-                      <div className="absolute inset-0 bg-linear-to-t from-black/90 to-transparent" />
+                      <div className="absolute inset-0 bg-linear-to-t from-black/90 via-transparent to-transparent" />
                       <p className="absolute bottom-6 left-6 text-[10px] font-mono text-emerald-400 font-bold tracking-[0.3em] uppercase">
                         {latestPhotos[currentSlide].label}
                       </p>
                     </motion.div>
                   ) : (
-                    <div className="flex items-center justify-center h-full text-slate-600 font-mono text-[10px] uppercase tracking-widest">No_Media_Found</div>
+                    <div className="flex items-center justify-center h-full text-council-slate font-mono text-[10px] uppercase tracking-widest">No_Media_Found</div>
                   )}
                 </AnimatePresence>
               )}
             </div>
           </div>
 
-          {/* Notice Board Column (Kept Exactly as original) */}
-          <div className="w-full lg:w-1/2 bg-slate-900/50 border border-white/5 rounded-[2.5rem] p-8 flex flex-col min-h-112.5 group hover:border-blue-500/20 transition-all backdrop-blur-sm">
+          {/* Notice Board Column */}
+          <div className="w-full lg:w-1/2 bg-theme-text/5 dark:bg-slate-900/50 border border-theme-grid/20 rounded-[2.5rem] p-8 flex flex-col min-h-112.5 group hover:border-blue-500/20 transition-all backdrop-blur-sm">
             <div className="flex justify-between items-center mb-10">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500 animate-pulse">
                   <Zap size={18} />
                 </div>
-                <h3 className="text-[20px] font-mono tracking-[0.2em] uppercase text-slate-200 font-black">
+                <h3 className="text-[20px] font-mono tracking-[0.2em] uppercase text-theme-text font-black">
                   NOTICE BOARD
                 </h3>
               </div>
@@ -277,20 +280,20 @@ export default function Home() {
                     whileInView={{ opacity: 1, x: 0 }}
                     transition={{ delay: idx * 0.1 }}
                     key={idx} 
-                    className="p-5 bg-white/5 border-l-2 border-white/10 hover:border-blue-500 hover:bg-white/3 transition-all cursor-pointer group/item rounded-r-2xl"
+                    className="p-5 bg-theme-text/5 border-l-2 border-theme-text/10 hover:border-blue-500 hover:bg-theme-text/10 transition-all cursor-pointer group/item rounded-r-2xl"
                   >
                     <div className="flex justify-between items-start mb-2">
-                      <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest font-mono">
+                      <span className="text-[9px] font-black text-blue-500 dark:text-blue-400 uppercase tracking-widest font-mono">
                         {notice.date}
                       </span>
                     </div>
-                    <p className="text-xs font-bold uppercase leading-relaxed text-slate-300 group-hover/item:text-white transition-colors line-clamp-2">
+                    <p className="text-xs font-bold uppercase leading-relaxed text-council-slate dark:text-slate-300 group-hover/item:text-theme-text transition-colors line-clamp-2">
                       {notice.title}
                     </p>
                   </motion.div>
                 ))
               ) : (
-                <div className="flex flex-col items-center justify-center h-full text-slate-600 gap-4">
+                <div className="flex flex-col items-center justify-center h-full text-council-slate gap-4">
                   <Terminal size={32} className="opacity-20" />
                   <p className="font-mono text-[10px] uppercase font-black tracking-widest">No_Active_Signals_Found</p>
                 </div>
@@ -299,7 +302,7 @@ export default function Home() {
 
             <Link 
               href="/notices" 
-              className="mt-8 py-4 border border-white/5 rounded-2xl text-center text-[12px] font-mono text-slate-500 hover:text-white hover:bg-white/5 uppercase tracking-[0.3em] font-black transition-all"
+              className="mt-8 py-4 border border-theme-grid/20 rounded-2xl text-center text-[12px] font-mono text-council-slate hover:text-theme-text hover:bg-theme-text/5 uppercase tracking-[0.3em] font-black transition-all"
             >
               Access_Full_Archive
             </Link>
@@ -307,18 +310,18 @@ export default function Home() {
         </div>
       </section>
 
-      {/* (Rest of the Footer/Institutional Strip kept exactly as original) */}
-      <section className="relative z-10 py-12 border-y border-white/10 bg-white/3">
+      {/* Institutional Strip */}
+      <section className="relative z-10 py-12 border-y border-theme-grid/20 bg-theme-text/3">
         <div className="max-w-6xl mx-auto px-6 flex flex-wrap justify-center items-center gap-12 md:gap-32">
           {[
             { name: "REC Ambedkar Nagar", url: "https://recabn.ac.in/", logo: "/REC.png" },
             { name: "AKTU", url: "https://aktu.ac.in/", logo: "/aktu.png" },
           ].map((site, i) => (
             <a key={i} href={site.url} target="_blank" rel="noopener noreferrer" className="group flex flex-col items-center gap-4 transition-transform hover:scale-105">
-              <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-white flex items-center justify-center border-4 border-slate-800 group-hover:border-emerald-500 transition-all shadow-[0_0_30px_rgba(0,0,0,0.3)] overflow-hidden">
+              <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-white flex items-center justify-center border-4 border-theme-text/10 group-hover:border-emerald-500 transition-all shadow-lg overflow-hidden">
                 <Image src={site.logo} alt={`${site.name} official logo`} width={96} height={96} className="w-full h-full object-contain p-2" />
               </div>
-              <span className="text-[12px] md:text-[14px] font-mono tracking-[0.2em] uppercase text-slate-200 group-hover:text-emerald-400 font-black transition-colors">
+              <span className="text-[12px] md:text-[14px] font-mono tracking-[0.2em] uppercase text-theme-text group-hover:text-emerald-500 font-black transition-colors">
                 {site.name}
               </span>
             </a>
@@ -326,32 +329,32 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="relative z-10 py-20 px-6 max-w-7xl mx-auto border-t border-white/5">
+      {/* Footer */}
+      <footer className="relative z-10 py-20 px-6 max-w-7xl mx-auto border-t border-theme-grid/20">
         <div className="grid md:grid-cols-3 gap-12">
           <div className="space-y-6">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-white rounded-full p-0.5 shrink-0 flex items-center justify-center overflow-hidden border border-white/10 shadow-lg">
+              <div className="w-12 h-12 bg-white rounded-full p-0.5 shrink-0 flex items-center justify-center overflow-hidden border border-theme-grid/20 shadow-lg">
                 <Image src="/logo.png" alt="Technical Council Logo" width={48} height={48} className="w-full h-full object-contain rounded-full" />
               </div>
-              <h3 className="text-sm font-black uppercase tracking-widest text-slate-200 leading-tight">
+              <h3 className="text-sm font-black uppercase tracking-widest text-theme-text leading-tight">
                 Technical Council <br /> <span className="text-emerald-500">REC Ambedkar Nagar</span>
               </h3>
             </div>
-            <p className="text-slate-400 text-xs leading-relaxed uppercase tracking-tighter">
+            <p className="text-council-slate text-xs leading-relaxed uppercase tracking-tighter">
               The apex technical body of Rajkiya Engineering College, Ambedkar Nagar, dedicated to fostering innovation and engineering excellence.
             </p>
-            {/* 🌐 ADDED SOCIAL LINKS SECTION */}
             <div className="flex items-center gap-4 pt-2">
-              <a href="https://www.instagram.com/technicalcouncil_recabn?igsh=MTQyb3ZqazMxMnRoMg==" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-pink-500 transition-colors p-2 bg-white/5 rounded-xl hover:bg-white/10">
+              <a href="https://www.instagram.com/technicalcouncil_recabn?igsh=MTQyb3ZqazMxMnRoMg==" target="_blank" rel="noopener noreferrer" className="text-council-slate hover:text-pink-500 transition-colors p-2 bg-theme-text/5 rounded-xl hover:bg-theme-text/10">
                 <Instagram size={16} />
               </a>
-              <a href="https://linkedin.com/" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-blue-500 transition-colors p-2 bg-white/5 rounded-xl hover:bg-white/10">
+              <a href="https://linkedin.com/" target="_blank" rel="noopener noreferrer" className="text-council-slate hover:text-blue-500 transition-colors p-2 bg-theme-text/5 rounded-xl hover:bg-theme-text/10">
                 <Linkedin size={16} />
               </a>
-              <a href="https://github.com/" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-white transition-colors p-2 bg-white/5 rounded-xl hover:bg-white/10">
+              <a href="https://github.com/" target="_blank" rel="noopener noreferrer" className="text-council-slate hover:text-theme-text transition-colors p-2 bg-theme-text/5 rounded-xl hover:bg-theme-text/10">
                 <Github size={16} />
               </a>
-              <a href="https://youtube.com/" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-red-500 transition-colors p-2 bg-white/5 rounded-xl hover:bg-white/10">
+              <a href="https://youtube.com/" target="_blank" rel="noopener noreferrer" className="text-council-slate hover:text-red-500 transition-colors p-2 bg-theme-text/5 rounded-xl hover:bg-theme-text/10">
                 <Youtube size={16} />
               </a>
             </div>
@@ -367,7 +370,7 @@ export default function Home() {
                 { name: "Council Team", href: "/team" }
               ].map((link, i) => (
                 <li key={i}>
-                  <Link href={link.href} className="text-[11px] font-bold text-slate-500 hover:text-white transition-colors uppercase tracking-widest flex items-center gap-2 group">
+                  <Link href={link.href} className="text-[11px] font-bold text-council-slate hover:text-theme-text transition-colors uppercase tracking-widest flex items-center gap-2 group">
                     <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" /> {link.name}
                   </Link>
                 </li>
@@ -376,25 +379,24 @@ export default function Home() {
           </div>
 
           <div className="space-y-6">
-            <div className="p-4 bg-white/3 border border-white/5 rounded-2xl">
-              <p className="text-[10px] font-mono text-slate-500 uppercase mb-2 font-black">Mailing_Address</p>
-              <p className="text-xs text-slate-300 leading-relaxed font-medium uppercase tracking-tight mb-2">
+            <div className="p-4 bg-theme-text/3 border border-theme-grid/20 rounded-2xl">
+              <p className="text-[10px] font-mono text-council-slate uppercase mb-2 font-black">Mailing_Address</p>
+              <p className="text-xs text-theme-text leading-relaxed font-medium uppercase tracking-tight mb-2">
                 Rajkiya Engineering College, Ambedkar Nagar, UP - 224122
               </p>
-              {/* ✉️ INSIGHT EMAIL CONTAINER */}
-              <p className="text-[10px] font-mono text-slate-500 uppercase mt-3 mb-1 font-black">Official_Inquiries</p>
-              <a href="mailto:techcouncil@recabn.ac.in" className="text-xs text-emerald-400 font-mono hover:underline block break-all">
+              <p className="text-[10px] font-mono text-council-slate uppercase mt-3 mb-1 font-black">Official_Inquiries</p>
+              <a href="mailto:techcouncil@recabn.ac.in" className="text-xs text-emerald-500 font-mono hover:underline block break-all">
                 techcouncil@recabn.ac.in
               </a>
             </div>
-            <Link href="/contact" className="w-full py-4 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-emerald-500 hover:text-white transition-all flex items-center justify-center gap-2">
+            <Link href="/contact" className="w-full py-4 bg-theme-text text-theme-bg rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-emerald-500 hover:text-white transition-all flex items-center justify-center gap-2">
               Initiate Contact <ExternalLink size={14} />
             </Link>
           </div>
         </div>
 
-        <div className="mt-20 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-[9px] font-mono text-slate-600 uppercase tracking-widest">
+        <div className="mt-20 pt-8 border-t border-theme-grid/20 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-[9px] font-mono text-council-slate uppercase tracking-widest">
             © 2026 Technical Council // REC Ambedkar Nagar
           </p>
         </div>

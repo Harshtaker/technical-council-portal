@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
-import { Terminal, Calendar, ChevronLeft, MessageSquare, Hash, ExternalLink, Link2Off } from "lucide-react";
+import { Terminal, Calendar, ChevronLeft, ExternalLink, Link2Off } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -10,12 +10,33 @@ interface Notice {
   id: string;
   content: string;
   updated_at: string;
-  link_url?: string; // New field for your PDF or External Links
+  link_url?: string; 
 }
 
 export default function NoticesPage() {
   const [notices, setNotices] = useState<Notice[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // 🌍 CLIENT RECONCILIATION: Hotfix favicon trigger mechanism for system syncing
+  useEffect(() => {
+    const updateFavicon = () => {
+      const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      let link: HTMLLinkElement | null = document.querySelector("link[rel*='icon']");
+      
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'shortcut icon';
+        document.getElementsByTagName('head')[0].appendChild(link);
+      }
+      
+      link.href = isDarkMode ? "/favicon-light.png" : "/favicon-dark.png";
+    };
+
+    updateFavicon();
+    const matcher = window.matchMedia("(prefers-color-scheme: dark)");
+    matcher.addEventListener("change", updateFavicon);
+    return () => matcher.removeEventListener("change", updateFavicon);
+  }, []);
 
   async function fetchAllNotices() {
     try {
@@ -43,19 +64,20 @@ export default function NoticesPage() {
   }, []);
 
   return (
-    <main className="relative min-h-screen text-slate-300 bg-[#020617] font-mono selection:bg-emerald-500/30 overflow-x-hidden">
+    /* ✅ FIXED: Bound core body container to responsive dynamic theme tokens */
+    <main className="relative min-h-screen text-theme-text bg-theme-bg font-sans overflow-x-hidden transition-colors duration-300">
       
       {/* 🌌 HUD BACKGROUND ENGINE */}
+      <div className="fixed inset-0 z-0 bg-grid-pattern opacity-40 pointer-events-none" />
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,#10b98108_0%,transparent_50%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-size-[4rem_4rem] opacity-20" />
       </div>
 
       <div className="relative z-10 max-w-6xl mx-auto px-6 pt-32 pb-20">
         
         {/* 📟 HEADER */}
         <div className="mb-20">
-          <Link href="/" className="inline-flex items-center gap-3 text-sm text-emerald-500 uppercase tracking-[0.4em] font-black hover:text-white transition-all mb-10 group">
+          <Link href="/" className="inline-flex items-center gap-3 text-sm text-emerald-500 uppercase tracking-[0.4em] font-black hover:text-theme-text transition-all group mb-10">
             <ChevronLeft size={20} className="group-hover:-translate-x-2 transition-transform" /> 
             <span>HOME_SCREEN</span>
           </Link>
@@ -65,17 +87,18 @@ export default function NoticesPage() {
             animate={{ opacity: 1, x: 0 }}
             className="border-l-8 border-emerald-500 pl-6"
           >
-            <h1 className="text-4xl md:text-7xl font-black text-white tracking-tighter uppercase leading-none mb-4 ">
+            <h1 className="text-4xl md:text-7xl font-black text-theme-text tracking-tighter uppercase leading-none mb-4 ">
               NOTICES<span className="text-emerald-500">.</span>
             </h1>
           </motion.div>
         </div>
 
         {/* 📊 TABULAR DATA LOGS */}
-        <div className="w-full overflow-x-auto rounded-[2.5rem] border border-white/10 bg-white/3 backdrop-blur-2xl shadow-2xl">
+        {/* ✅ FIXED: Remapped row backgrounds and divider bounds to support fluid theme inversion scaling */}
+        <div className="w-full overflow-x-auto rounded-[2.5rem] border border-theme-grid/20 bg-theme-text/5 backdrop-blur-2xl shadow-2xl">
           <table className="w-full text-left border-collapse min-w-175">
             <thead>
-              <tr className="border-b border-white/10 bg-white/3">
+              <tr className="border-b border-theme-grid/20 bg-theme-text/5">
                 <th className="p-6 text-sm font-black uppercase tracking-[0.3em] text-emerald-500 ">SR_NO.</th>
                 <th className="p-6 text-sm font-black uppercase tracking-[0.3em] text-emerald-500 ">Message</th>
                 <th className="p-6 text-sm font-black uppercase tracking-[0.3em] text-emerald-500 ">Date</th>
@@ -85,7 +108,7 @@ export default function NoticesPage() {
             <tbody>
               {loading ? (
                 [...Array(5)].map((_, i) => (
-                  <tr key={i} className="animate-pulse border-b border-white/5"><td colSpan={4} className="p-12 bg-white/5" /></tr>
+                  <tr key={i} className="animate-pulse border-b border-theme-grid/10"><td colSpan={4} className="p-12 bg-theme-text/5" /></tr>
                 ))
               ) : notices.length > 0 ? (
                 <AnimatePresence>
@@ -95,17 +118,17 @@ export default function NoticesPage() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.08 }}
-                      className="border-b border-white/5 hover:bg-emerald-500/2 transition-all group"
+                      className="border-b border-theme-grid/10 hover:bg-emerald-500/5 transition-all group"
                     >
-                      <td className="p-8 font-black text-slate-600 text-xl group-hover:text-emerald-500/50 transition-colors">
+                      <td className="p-8 font-black text-council-slate/40 text-xl group-hover:text-emerald-500/50 transition-colors">
                         {String(notices.length - idx).padStart(2, '0')}
                       </td>
                       <td className="p-8">
-                        <p className="text-xl md:text-2xl font-bold text-slate-100 uppercase tracking-tight group-hover:text-white transition-colors leading-snug max-w-2xl">
+                        <p className="text-xl md:text-2xl font-bold text-theme-text/90 uppercase tracking-tight group-hover:text-theme-text transition-colors leading-snug max-w-2xl">
                           {notice.content}
                         </p>
                       </td>
-                      <td className="p-8 text-sm text-slate-500 font-bold tracking-widest whitespace-nowrap">
+                      <td className="p-8 text-sm text-council-slate font-bold tracking-widest whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <Calendar size={14} className="text-emerald-500/40" />
                           {new Date(notice.updated_at).toLocaleDateString('en-GB', { 
@@ -119,12 +142,12 @@ export default function NoticesPage() {
                             href={notice.link_url} 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 text-black rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white hover:scale-105 transition-all shadow-lg shadow-emerald-500/10"
+                            className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 text-white dark:text-black rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-emerald-400 hover:scale-105 transition-all shadow-lg shadow-emerald-500/10"
                           >
                             View_Doc <ExternalLink size={12} />
                           </a>
                         ) : (
-                          <div className="inline-flex items-center gap-2 px-6 py-3 bg-white/5 text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] border border-white/5 cursor-not-allowed italic">
+                          <div className="inline-flex items-center gap-2 px-6 py-3 bg-theme-text/5 text-council-slate/40 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] border border-theme-grid/10 cursor-not-allowed italic">
                             No_Link <Link2Off size={12} />
                           </div>
                         )}
@@ -134,7 +157,7 @@ export default function NoticesPage() {
                 </AnimatePresence>
               ) : (
                 <tr>
-                  <td colSpan={4} className="p-40 text-center text-slate-600 font-black uppercase tracking-widest italic">
+                  <td colSpan={4} className="p-40 text-center text-council-slate/40 font-black uppercase tracking-widest italic">
                     <Terminal size={80} className="mx-auto opacity-10 mb-6" />
                     Null_Data_Retrieved
                   </td>

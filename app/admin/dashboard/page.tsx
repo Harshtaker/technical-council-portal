@@ -18,7 +18,6 @@ export default function AdminDashboard() {
 
   const [notice, setNotice] = useState({ content: "", link_url: "", is_active: true });
   
-  // ⚡ UPDATED: Integrated structural form config variables into the state
   const [event, setEvent] = useState({ 
     title: "", 
     event_date: "", 
@@ -32,6 +31,27 @@ export default function AdminDashboard() {
   });
   
   const [member, setMember] = useState({ name: "", role: "", rank: 1, image_url: "", category: "student" });
+
+  // 🌍 CLIENT RECONCILIATION: Runtime dynamic layout tab tab icon handler
+  useEffect(() => {
+    const updateFavicon = () => {
+      const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      let link: HTMLLinkElement | null = document.querySelector("link[rel*='icon']");
+      
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'shortcut icon';
+        document.getElementsByTagName('head')[0].appendChild(link);
+      }
+      
+      link.href = isDarkMode ? "/favicon-light.png" : "/favicon-dark.png";
+    };
+
+    updateFavicon();
+    const matcher = window.matchMedia("(prefers-color-scheme: dark)");
+    matcher.addEventListener("change", updateFavicon);
+    return () => matcher.removeEventListener("change", updateFavicon);
+  }, []);
 
   useEffect(() => {
     fetchData();
@@ -147,7 +167,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // 📝 NEW HELPERS FOR DYNAMIC WEB FORM GENERATOR
   const addDynamicField = () => {
     setEvent(prev => ({
       ...prev,
@@ -171,18 +190,31 @@ export default function AdminDashboard() {
   };
 
   return (
-    <main className="min-h-screen bg-[#020617] text-slate-300 font-sans overflow-x-hidden">
-      <nav className="border-b border-white/10 bg-[#020617]/80 backdrop-blur-xl sticky top-0 z-50 p-4 md:p-6">
+    /* ✅ FIXED: Swapped static bg-#020617 codes with custom responsive token references */
+    <main className="min-h-screen text-theme-text bg-theme-bg font-sans overflow-x-hidden transition-colors duration-300">
+      
+      {/* BACKGROUND MATRIX PATTERN */}
+      <div className="fixed inset-0 z-0 bg-grid-pattern opacity-40 pointer-events-none" />
+
+      {/* STICKY CONTROL HEADER */}
+      <nav className="relative z-50 border-b border-theme-grid/20 bg-theme-bg/80 backdrop-blur-xl p-4 md:p-6">
         <div className="max-w-7xl mx-auto flex justify-between items-center gap-2">
           <div className="flex items-center gap-2 md:gap-3">
             <div className="p-2 bg-emerald-600 rounded-lg text-white shrink-0"><Shield size={18} /></div>
-            <h1 className="text-white font-bold tracking-tight text-sm md:text-lg">College Council Management System</h1>
+            <h1 className="text-theme-text font-bold tracking-tight text-sm md:text-lg">College Council Management System</h1>
           </div>
-          <button onClick={async () => { await supabase.auth.signOut(); router.push("/admin"); }} className="text-slate-400 hover:text-red-500 text-[10px] font-semibold uppercase border border-white/10 px-3 py-2 rounded-lg transition-colors">Sign Out</button>
+          <button 
+            onClick={async () => { await supabase.auth.signOut(); router.push("/admin"); }} 
+            className="text-council-slate hover:text-red-500 text-[10px] font-semibold uppercase border border-theme-grid/20 hover:border-red-500/30 px-3 py-2 rounded-lg transition-all"
+          >
+            Sign Out
+          </button>
         </div>
       </nav>
 
-      <div className="max-w-7xl mx-auto px-4 md:px-6 mt-8 md:mt-12 flex flex-col lg:grid lg:grid-cols-4 gap-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 mt-8 md:mt-12 flex flex-col lg:grid lg:grid-cols-4 gap-8 pb-16">
+        
+        {/* APP CONTROLS SWITCH PANEL */}
         <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
           {[
             { id: "notices", label: "Notice Board", icon: Megaphone },
@@ -190,29 +222,38 @@ export default function AdminDashboard() {
             { id: "members", label: "Council Members", icon: Users },
             { id: "media", label: "Photo Gallery", icon: ImageIcon }
           ].map((t) => (
-            <button key={t.id} onClick={() => setActiveTab(t.id as any)} className={`p-4 rounded-xl border text-xs md:text-sm font-semibold flex items-center gap-4 transition-all ${activeTab === t.id ? "bg-emerald-600 text-white border-emerald-600 shadow-lg" : "bg-white/5 border-white/5 hover:bg-white/10"}`}>
+            <button 
+              key={t.id} 
+              onClick={() => setActiveTab(t.id as any)} 
+              className={`p-4 rounded-xl border text-xs md:text-sm font-semibold flex items-center gap-4 transition-all ${
+                activeTab === t.id 
+                  ? "bg-emerald-600 text-white border-emerald-600 shadow-lg shadow-emerald-900/20" 
+                  : "bg-theme-text/5 border-theme-grid/10 hover:bg-theme-text/10"
+              }`}
+            >
               <t.icon size={18}/> {t.label}
             </button>
           ))}
         </div>
 
+        {/* ACTIVE MODULE CONTAINER VIEW */}
         <div className="lg:col-span-3 space-y-8">
-          <div className="bg-white/5 border border-white/10 p-6 md:p-8 rounded-3xl backdrop-blur-sm">
-            <h2 className="text-white font-bold text-xl mb-6 flex items-center gap-3">
+          <div className="bg-theme-text/5 border border-theme-grid/10 p-6 md:p-8 rounded-3xl backdrop-blur-md">
+            <h2 className="text-theme-text font-bold text-xl mb-6 flex items-center gap-3">
               <Plus size={22} className="text-emerald-500" /> 
               {activeTab === "media" ? "Upload Gallery Photos" : `Create New ${activeTab.slice(0, -1)}`}
             </h2>
 
             {(activeTab as string) === "media" ? (
-              <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-white/20 rounded-2xl bg-black/20 hover:border-emerald-500/50 transition-all">
+              <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-theme-grid/20 rounded-2xl bg-theme-text/2 hover:border-emerald-500/50 transition-all">
                 <input type="file" id="bulk-media" multiple hidden onChange={(e) => handleSystemUpload(e, 'media')} disabled={uploading} accept="image/*" />
                 <label htmlFor="bulk-media" className="cursor-pointer flex flex-col items-center gap-4 group">
                   <div className="w-14 h-14 bg-emerald-500/10 rounded-full flex items-center justify-center text-emerald-500 group-hover:bg-emerald-600 group-hover:text-white transition-all">
                     {uploading ? <RefreshCcw className="animate-spin" /> : <Upload size={28} />}
                   </div>
                   <div className="text-center">
-                    <p className="text-white font-semibold text-sm">Click to select files</p>
-                    <p className="text-slate-500 text-xs mt-1 font-medium italic">Photos will be added to the public gallery</p>
+                    <p className="text-theme-text font-semibold text-sm">Click to select files</p>
+                    <p className="text-council-slate text-xs mt-1 font-medium italic">Photos will be added to the public gallery</p>
                   </div>
                 </label>
               </div>
@@ -220,27 +261,26 @@ export default function AdminDashboard() {
               <form onSubmit={handleAdd} className="space-y-5">
                 {activeTab === "notices" && (
                   <div className="space-y-4">
-                    <textarea className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none focus:border-emerald-500/50 min-h-30" placeholder="Enter notice description..." value={notice.content} onChange={(e)=>setNotice({...notice, content: e.target.value})} required />
-                    <input className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none focus:border-emerald-500/50" placeholder="Optional Link" value={notice.link_url} onChange={(e)=>setNotice({...notice, link_url: e.target.value})} />
+                    <textarea className="w-full bg-theme-bg/50 border border-theme-grid/10 rounded-xl p-4 text-theme-text placeholder:text-council-slate/40 outline-none focus:border-emerald-500/50 min-h-30" placeholder="Enter notice description..." value={notice.content} onChange={(e)=>setNotice({...notice, content: e.target.value})} required />
+                    <input className="w-full bg-theme-bg/50 border border-theme-grid/10 rounded-xl p-4 text-theme-text placeholder:text-council-slate/40 outline-none focus:border-emerald-500/50" placeholder="Optional Link" value={notice.link_url} onChange={(e)=>setNotice({...notice, link_url: e.target.value})} />
                   </div>
                 )}
 
                 {activeTab === "events" && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input className="bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none" placeholder="Event Title" value={event.title} onChange={(e)=>setEvent({...event, title: e.target.value})} required />
-                    <input type="date" className="bg-black/40 border border-white/10 rounded-xl p-4 text-white outline-none" value={event.event_date} onChange={(e)=>setEvent({...event, event_date: e.target.value})} required />
+                    <input className="bg-theme-bg/50 border border-theme-grid/10 rounded-xl p-4 text-theme-text placeholder:text-council-slate/40 outline-none focus:border-emerald-500/50" placeholder="Event Title" value={event.title} onChange={(e)=>setEvent({...event, title: e.target.value})} required />
+                    <input type="date" className="bg-theme-bg/50 border border-theme-grid/10 rounded-xl p-4 text-theme-text outline-none focus:border-emerald-500/50" value={event.event_date} onChange={(e)=>setEvent({...event, event_date: e.target.value})} required />
                     <div className="flex gap-2">
-                      <input className="flex-1 bg-black/40 border border-white/10 rounded-xl p-4 text-xs text-slate-400 italic" placeholder="Upload Banner Image" value={event.image_url} readOnly />
+                      <input className="flex-1 bg-theme-bg/50 border border-theme-grid/10 rounded-xl p-4 text-xs text-council-slate italic outline-none" placeholder="Upload Banner Image" value={event.image_url} readOnly />
                       <label className="p-4 bg-emerald-500/10 text-emerald-500 rounded-xl cursor-pointer hover:bg-emerald-600 hover:text-white transition-all">
                         <Upload size={18} /><input type="file" hidden accept="image/*" onChange={(e) => handleSystemUpload(e, 'event')} />
                       </label>
                     </div>
-                    <input className="bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none" placeholder="Location" value={event.location} onChange={(e)=>setEvent({...event, location: e.target.value})} />
-                    <input className="bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none" placeholder="External Registration Link (Optional)" value={event.reg_link} onChange={(e)=>setEvent({...event, reg_link: e.target.value})} />
+                    <input className="bg-theme-bg/50 border border-theme-grid/10 rounded-xl p-4 text-theme-text placeholder:text-council-slate/40 outline-none focus:border-emerald-500/50" placeholder="Location" value={event.location} onChange={(e)=>setEvent({...event, location: e.target.value})} />
+                    <input className="bg-theme-bg/50 border border-theme-grid/10 rounded-xl p-4 text-theme-text placeholder:text-council-slate/40 outline-none focus:border-emerald-500/50" placeholder="External Registration Link (Optional)" value={event.reg_link} onChange={(e)=>setEvent({...event, reg_link: e.target.value})} />
                     
-                    {/* ⚙️ NEW: In-House Web Registration Control Framework */}
-                    <div className="bg-black/40 border border-white/10 rounded-xl p-4 flex items-center justify-between">
-                      <span className="text-sm font-semibold text-slate-300">Open In-House Portal Registrations</span>
+                    <div className="bg-theme-bg/50 border border-theme-grid/10 rounded-xl p-4 flex items-center justify-between">
+                      <span className="text-sm font-semibold text-theme-text/80">Open In-House Portal Registrations</span>
                       <input 
                         type="checkbox" 
                         checked={event.is_registration_open} 
@@ -249,64 +289,65 @@ export default function AdminDashboard() {
                       />
                     </div>
 
-                    <textarea className="md:col-span-2 bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none min-h-24" placeholder="Event Summary & Top Performers " value={event.summary_text} onChange={(e)=>setEvent({...event, summary_text: e.target.value})} />
-                    <textarea className="md:col-span-2 bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none min-h-32" placeholder="Full Event Description..." value={event.description} onChange={(e)=>setEvent({...event, description: e.target.value})} />
+                    <textarea className="md:col-span-2 bg-theme-bg/50 border border-theme-grid/10 rounded-xl p-4 text-theme-text placeholder:text-council-slate/40 outline-none focus:border-emerald-500/50 min-h-24" placeholder="Event Summary & Top Performers " value={event.summary_text} onChange={(e)=>setEvent({...event, summary_text: e.target.value})} />
+                    <textarea className="md:col-span-2 bg-theme-bg/50 border border-theme-grid/10 rounded-xl p-4 text-theme-text placeholder:text-council-slate/40 outline-none focus:border-emerald-500/50 min-h-32" placeholder="Full Event Description..." value={event.description} onChange={(e)=>setEvent({...event, description: e.target.value})} />
                   
-                    {/* 🛠️ NEW: Dynamic Embedded JSON Form Generator Fields */}
                     {event.is_registration_open && (
-                      <div className="md:col-span-2 border border-dashed border-white/10 rounded-2xl p-5 bg-black/10 space-y-4">
+                      <div className="md:col-span-2 border border-dashed border-theme-grid/20 rounded-2xl p-5 bg-theme-text/2 space-y-4">
                         <div className="flex justify-between items-center">
                           <div>
-                            <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400">Custom Form Fields Creator</h4>
-                            <p className="text-[11px] text-slate-500 font-medium">Add required inputs for the registration sheet data model</p>
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-500">Custom Form Fields Creator</h4>
+                            <p className="text-[11px] text-council-slate font-medium">Add required inputs for the registration sheet data model</p>
                           </div>
                           <button 
                             type="button" 
                             onClick={addDynamicField}
-                            className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-black font-bold text-xs uppercase tracking-wider rounded-lg transition-all flex items-center gap-2"
+                            className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-white font-bold text-xs uppercase tracking-wider rounded-lg transition-all flex items-center gap-2"
                           >
                             <Plus size={14} /> Add Input
                           </button>
                         </div>
 
                         {event.custom_fields.length === 0 ? (
-                          <p className="text-xs text-slate-600 italic py-4 text-center">No custom inputs mapped. Add fields to render the terminal form view.</p>
+                          <p className="text-xs text-council-slate/60 italic py-4 text-center">No custom inputs mapped. Add fields to render the terminal form view.</p>
                         ) : (
                           <div className="space-y-3">
                             {event.custom_fields.map((field, index) => (
-                              <div key={index} className="flex items-center gap-3 bg-black/30 p-3 rounded-xl border border-white/5">
+                              <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-3 bg-theme-bg/60 p-3 rounded-xl border border-theme-grid/10">
                                 <input 
                                   type="text" 
                                   placeholder="Question / Label (e.g., Roll Number)" 
                                   value={field.label}
                                   required
                                   onChange={(e) => updateDynamicField(index, "label", e.target.value)}
-                                  className="flex-1 bg-slate-900 border border-white/10 rounded-lg p-2.5 text-xs text-white outline-none"
+                                  className="flex-1 bg-theme-bg border border-theme-grid/10 rounded-lg p-2.5 text-xs text-theme-text outline-none focus:border-emerald-500/40"
                                 />
-                                <select
-                                  value={field.type}
-                                  onChange={(e) => updateDynamicField(index, "type", e.target.value)}
-                                  className="bg-slate-900 border border-white/10 rounded-lg p-2.5 text-xs text-white outline-none"
-                                >
-                                  <option value="text">Text / String</option>
-                                  <option value="number">Number</option>
-                                  <option value="email">Email</option>
-                                </select>
-                                <label className="flex items-center gap-2 text-xs text-slate-500 font-medium cursor-pointer">
-                                  <input 
-                                    type="checkbox" 
-                                    checked={field.required}
-                                    onChange={(e) => updateDynamicField(index, "required", e.target.checked)}
-                                    className="accent-emerald-500"
-                                  /> Required
-                                </label>
-                                <button 
-                                  type="button" 
-                                  onClick={() => removeDynamicField(index)}
-                                  className="p-2 text-slate-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
-                                >
-                                  <X size={14} />
-                                </button>
+                                <div className="flex items-center justify-between gap-4 grow sm:grow-0">
+                                  <select
+                                    value={field.type}
+                                    onChange={(e) => updateDynamicField(index, "type", e.target.value)}
+                                    className="bg-theme-bg border border-theme-grid/10 rounded-lg p-2.5 text-xs text-theme-text outline-none cursor-pointer"
+                                  >
+                                    <option value="text" className="bg-theme-bg text-theme-text">Text / String</option>
+                                    <option value="number" className="bg-theme-bg text-theme-text">Number</option>
+                                    <option value="email" className="bg-theme-bg text-theme-text">Email</option>
+                                  </select>
+                                  <label className="flex items-center gap-2 text-xs text-council-slate font-medium cursor-pointer select-none">
+                                    <input 
+                                      type="checkbox" 
+                                      checked={field.required}
+                                      onChange={(e) => updateDynamicField(index, "required", e.target.checked)}
+                                      className="accent-emerald-500 w-3.5 h-3.5"
+                                    /> Required
+                                  </label>
+                                  <button 
+                                    type="button" 
+                                    onClick={() => removeDynamicField(index)}
+                                    className="p-2 text-council-slate hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                                  >
+                                    <X size={14} />
+                                  </button>
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -318,17 +359,17 @@ export default function AdminDashboard() {
 
                 {activeTab === "members" && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input className="bg-black/40 border border-white/10 rounded-xl p-4 text-white outline-none" placeholder="Full Name" value={member.name} onChange={(e)=>setMember({...member, name: e.target.value})} required />
-                    <input className="bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-600 outline-none" placeholder="Designation" value={member.role} onChange={(e)=>setMember({...member, role: e.target.value})} required />
+                    <input className="bg-theme-bg/50 border border-theme-grid/10 rounded-xl p-4 text-theme-text placeholder:text-council-slate/40 outline-none focus:border-emerald-500/50" placeholder="Full Name" value={member.name} onChange={(e)=>setMember({...member, name: e.target.value})} required />
+                    <input className="bg-theme-bg/50 border border-theme-grid/10 rounded-xl p-4 text-theme-text placeholder:text-council-slate/40 outline-none focus:border-emerald-500/50" placeholder="Designation" value={member.role} onChange={(e)=>setMember({...member, role: e.target.value})} required />
                     <div className="flex gap-2">
-                      <input className="flex-1 bg-black/40 border border-white/10 rounded-xl p-4 text-xs text-slate-400 italic" placeholder="Upload Portrait" value={member.image_url} readOnly />
+                      <input className="flex-1 bg-theme-bg/50 border border-theme-grid/10 rounded-xl p-4 text-xs text-council-slate italic outline-none" placeholder="Upload Portrait" value={member.image_url} readOnly />
                       <label className="p-4 bg-emerald-500/10 text-emerald-500 rounded-xl cursor-pointer hover:bg-emerald-600 hover:text-white transition-all">
                         <Upload size={18} /><input type="file" hidden accept="image/*" onChange={(e) => handleSystemUpload(e, 'member')} />
                       </label>
                     </div>
                     <input 
                       type="number" 
-                      className="bg-black/40 border border-white/10 rounded-xl p-4 text-white outline-none" 
+                      className="bg-theme-bg/50 border border-theme-grid/10 rounded-xl p-4 text-theme-text outline-none focus:border-emerald-500/50" 
                       placeholder="Display Rank" 
                       value={isNaN(member.rank) ? "" : member.rank} 
                       onChange={(e) => {
@@ -337,40 +378,41 @@ export default function AdminDashboard() {
                       }} 
                     />
                     <select 
-                      className="bg-black/40 border border-white/10 rounded-xl p-4 text-white outline-none focus:border-emerald-500/50" 
+                      className="bg-theme-bg/50 border border-theme-grid/10 rounded-xl p-4 text-theme-text outline-none focus:border-emerald-500/50 cursor-pointer" 
                       value={member.category} 
                       onChange={(e)=>setMember({...member, category: e.target.value})}
                     >
-                      <option value="student" className="bg-[#020617]">Student</option>
-                      <option value="administration" className="bg-[#020617]">Administration</option>
+                      <option value="student" className="bg-theme-bg text-theme-text">Student</option>
+                      <option value="administration" className="bg-theme-bg text-theme-text">Administration</option>
                     </select>
                   </div>
                 )}
 
-                <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-4 rounded-xl font-bold text-sm flex items-center justify-center gap-3 shadow-lg transition-all">
+                <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-4 rounded-xl font-bold text-sm flex items-center justify-center gap-3 shadow-lg shadow-emerald-900/10 transition-all">
                   Publish to Live Site <Send size={16}/>
                 </button>
               </form>
             )}
           </div>
 
-          <div className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden backdrop-blur-sm">
-             <div className="p-5 bg-white/5 border-b border-white/10 flex justify-between items-center text-slate-400">
+          {/* SYSTEM DATA FEED REGISTRY PANEL */}
+          <div className="bg-theme-text/5 border border-theme-grid/10 rounded-3xl overflow-hidden backdrop-blur-md">
+             <div className="p-5 bg-theme-text/2 border-b border-theme-grid/10 flex justify-between items-center text-council-slate">
                 <div className="flex items-center gap-3"><Globe size={16} /><h3 className="text-xs font-bold uppercase tracking-wider">Current Registry</h3></div>
                 <button onClick={fetchData} className={`text-emerald-500 hover:text-emerald-400 ${loading ? 'animate-spin' : ''}`}><RefreshCcw size={16}/></button>
              </div>
-             <div className="divide-y divide-white/5 max-h-125 overflow-y-auto">
+             <div className="divide-y divide-theme-grid/10 max-h-125 overflow-y-auto">
                 <AnimatePresence>
                 {dataList.map((item) => (
-                    <motion.div key={item.id || item.name} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-5 flex items-center justify-between hover:bg-white/5 transition-all group gap-4">
+                    <motion.div key={item.id || item.name} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-5 flex items-center justify-between hover:bg-theme-text/5 transition-all group gap-4">
                         <div className="space-y-1 min-w-0">
-                            <p className="text-white font-semibold text-sm md:text-base truncate">{item.content || item.title || item.name}</p>
+                            <p className="text-theme-text font-semibold text-sm md:text-base truncate">{item.content || item.title || item.name}</p>
                             <div className="flex items-center gap-3">
-                                <span className="text-[10px] text-slate-500 font-medium">ID: {(item.id || item.name).slice(0,8)}</span>
+                                <span className="text-[10px] text-council-slate/60 font-medium">ID: {(item.id || item.name).slice(0,8)}</span>
                                 <span className="text-[10px] text-emerald-600 font-bold uppercase">{item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Storage'}</span>
                             </div>
                         </div>
-                        <button onClick={() => handleDelete(item.id, item.name)} className="p-3 text-slate-500 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all shrink-0"><Trash2 size={18} /></button>
+                        <button onClick={() => handleDelete(item.id, item.name)} className="p-3 text-council-slate hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all shrink-0"><Trash2 size={18} /></button>
                     </motion.div>
                 ))}
                 </AnimatePresence>

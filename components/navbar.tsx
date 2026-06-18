@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Menu, X, ShieldCheck, Lock } from "lucide-react";
+import { Menu, X, ShieldCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Navbar() {
@@ -18,7 +18,8 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#020617]/95 md:bg-[#020617]/90 backdrop-blur-2xl border-b border-white/5">
+    /* ✅ FIXED: Replaced hardcoded bg-[#020617] with transparent adaptive theme colors */
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-theme-bg/85 backdrop-blur-2xl border-b border-theme-grid/20 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-6 h-24 flex items-center justify-between">
         
         {/* 📟 Brand Area */}
@@ -28,8 +29,8 @@ export default function Navbar() {
             whileTap={{ scale: 0.95 }}
             className="relative w-14 h-14 md:w-16 md:h-16 p-0.5 rounded-full bg-linear-to-tr from-emerald-500/40 to-blue-500/40 group-hover:from-emerald-400 group-hover:to-blue-400 transition-all duration-500 shadow-[0_0_20px_rgba(16,185,129,0.2)] overflow-hidden"
           >
-            {/* White Circular Frame with absolute centering and overflow hidden */}
-            <div className="w-full h-full bg-white rounded-full flex items-center justify-center overflow-hidden p-1">
+            {/* ✅ FIXED: Swapped pure bg-white container with automated inversion contrast frame */}
+            <div className="w-full h-full bg-theme-text/5 dark:bg-white rounded-full flex items-center justify-center overflow-hidden p-1 backdrop-blur-md">
               <Image 
                 src="/logo.png" 
                 alt="Technical Council Logo" 
@@ -42,10 +43,11 @@ export default function Navbar() {
           </motion.div>
 
           <div className="flex flex-col">
-            <span className="font-black text-white text-lg md:text-2xl tracking-tighter uppercase leading-none group-hover:text-emerald-400 transition-colors">
-              Technical <span className="text-emerald-500 group-hover:text-white transition-colors">Council</span>
+            {/* ✅ FIXED: Mapped text to theme token */}
+            <span className="font-black text-theme-text text-lg md:text-2xl tracking-tighter uppercase leading-none group-hover:text-emerald-500 transition-colors">
+              Technical <span className="text-emerald-500 group-hover:text-theme-text transition-colors">Council</span>
             </span>
-            <span className="text-[8px] md:text-[10px] font-mono text-slate-500 tracking-[0.4em] uppercase mt-1 md:mt-1.5">
+            <span className="text-[8px] md:text-[10px] font-mono text-council-slate tracking-[0.4em] uppercase mt-1 md:mt-1.5">
               REC_Ambedkar_Nagar
             </span>
           </div>
@@ -53,13 +55,14 @@ export default function Navbar() {
 
         {/* 💻 Desktop Navigation */}
         <div className="hidden md:flex items-center gap-12">
-          <div className="flex items-center gap-10 border-r border-white/10 pr-10 font-mono">
+          {/* ✅ FIXED: Border lines map cleanly to theme variables */}
+          <div className="flex items-center gap-10 border-r border-theme-grid/20 pr-10 font-mono">
             {navLinks.map((link) => (
               <Link 
                 key={link.href} 
                 href={link.href}
-                className={`text-[14px] uppercase tracking-[0.25em] transition-all hover:text-emerald-400 relative group/link ${
-                  pathname === link.href ? "text-emerald-500 font-bold" : "text-slate-400"
+                className={`text-[14px] uppercase tracking-[0.25em] transition-all hover:text-emerald-500 relative group/link ${
+                  pathname === link.href ? "text-emerald-500 font-bold" : "text-council-slate"
                 }`}
               >
                 {link.name}
@@ -73,18 +76,19 @@ export default function Navbar() {
             ))}
           </div>
 
+          {/* ✅ FIXED: Translucent modern button container */}
           <Link 
             href="/admin" 
-            className="group flex items-center gap-3 px-6 py-3 bg-slate-900/80 border border-white/10 text-white rounded-2xl text-[11px] font-mono tracking-widest hover:bg-white hover:text-black hover:border-white transition-all duration-500 shadow-2xl"
+            className="group flex items-center gap-3 px-6 py-3 bg-theme-text/5 dark:bg-slate-900/80 border border-theme-grid/20 text-theme-text rounded-2xl text-[11px] font-mono tracking-widest hover:bg-theme-text hover:text-theme-bg hover:border-theme-text transition-all duration-500 shadow-2xl"
           >
-            <ShieldCheck size={14} className="text-emerald-500 group-hover:text-black transition-colors" />
+            <ShieldCheck size={14} className="text-emerald-500 group-hover:text-theme-bg transition-colors" />
             ADMIN_LOGIN
           </Link>
         </div>
 
         {/* 📱 Mobile Toggle */}
         <button 
-          className="md:hidden text-white p-2 hover:bg-white/5 rounded-full transition-colors relative z-70"
+          className="md:hidden text-theme-text p-2 hover:bg-theme-text/5 rounded-full transition-colors relative z-70"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
           {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
@@ -99,11 +103,10 @@ export default function Navbar() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed inset-0 w-full h-screen bg-[#020617] md:hidden z-60 px-8 flex flex-col justify-center"
+            className="fixed inset-0 w-full h-screen bg-theme-bg md:hidden z-60 px-8 flex flex-col justify-center"
           >
-            {/* Close button inside menu for safety */}
             <button 
-              className="absolute top-8 right-8 text-white p-2"
+              className="absolute top-8 right-8 text-theme-text p-2"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               <X size={32} />
@@ -117,18 +120,18 @@ export default function Navbar() {
                   href={link.href}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`text-5xl font-black uppercase tracking-tighter transition-colors ${
-                    pathname === link.href ? "text-emerald-500" : "text-white hover:text-emerald-400"
+                    pathname === link.href ? "text-emerald-500" : "text-theme-text hover:text-emerald-500"
                   }`}
                 >
                   {link.name}
                 </Link>
               ))}
               
-              <div className="pt-10 mt-6 border-t border-white/10">
+              <div className="pt-10 mt-6 border-t border-theme-grid/20">
                 <Link 
                   href="/admin" 
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-4 w-full py-6 bg-emerald-500 text-black rounded-3xl text-sm font-mono font-black tracking-widest hover:bg-white transition-all shadow-lg shadow-emerald-500/20"
+                  className="flex items-center justify-center gap-4 w-full py-6 bg-emerald-500 text-black rounded-3xl text-sm font-mono font-black tracking-widest hover:bg-theme-text hover:text-theme-bg transition-all shadow-lg shadow-emerald-500/20"
                 >
                   <ShieldCheck size={20} /> ADMIN_LOGIN
                 </Link>
