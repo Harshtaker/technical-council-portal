@@ -12,9 +12,9 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://technical-council-portal.vercel.app"),
   icons: {
     // ✅ FIXED: Updated extension from .png to .jpg to match your new asset format
-    icon: "/favicon.png",      
-    shortcut: "/favicon.png",  
-    apple: "/favicon.png",     
+    icon: "/favicon.jpg",      
+    shortcut: "/favicon.jpg",  
+    apple: "/favicon.jpg",     
   },
   openGraph: {
     title: "Technical Council | REC Ambedkar Nagar",
