@@ -11,9 +11,10 @@ export const metadata: Metadata = {
   description: "Official Hub for Innovation and Technical Excellence",
   metadataBase: new URL("https://technical-council-portal.vercel.app"),
   icons: {
-    icon: "/favicon.png",      // ✅ Updated to point to our newly copied favicon asset
-    shortcut: "/favicon.png",  // ✅ Added for high-priority browser tab mapping
-    apple: "/favicon.png",     // ✅ Added for iOS/Apple devices caching
+    // ✅ FIXED: Updated extension from .png to .jpg to match your new asset format
+    icon: "/favicon.jpg",      
+    shortcut: "/favicon.jpg",  
+    apple: "/favicon.jpg",     
   },
   openGraph: {
     title: "Technical Council | REC Ambedkar Nagar",
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
     siteName: "Technical Council RECABN",
     images: [
       {
-        url: "/logo.png", // Keep logo.png for heavy 1200x630 OpenGraph link previews
+        url: "/logo.png", // Web preview ke liye logo.png ko aise hi rehne do
         width: 1200,
         height: 630,
         alt: "Technical Council Logo",
